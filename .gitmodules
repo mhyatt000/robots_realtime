@@ -11,3 +11,6 @@
 [submodule "dependencies/mjlab"]
 	path = dependencies/mjlab
 	url = https://github.com/mujocolab/mjlab.git
+[submodule "dependencies/lerobot_teleoperator_yamactiveleader"]
+	path = dependencies/lerobot_teleoperator_yamactiveleader
+	url = https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader.git
