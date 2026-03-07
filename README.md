@@ -47,6 +47,14 @@ or for robotiq gripper instead of default panda grippers (ensure flange orientat
 ```bash
 uv run robots_realtime/envs/launch.py --config_path configs/franka/franka_robotiq_viser.yaml
 ```
+For testing YAM Active Leaders with mujoco simulation. If on mac, use:
+```bash
+DYLD_LIBRARY_PATH=~/.local/share/uv/python/cpython-3.11.14-macos-aarch64-none/lib .venv/bin/mjpython robots_realtime/envs/launch.py --config-path configs/yam/yam_gello_pick_red_cube_sim.yaml
+```
+Otherwise:
+```bash
+uv run python robots_realtime/envs/launch.py --config-path configs/yam/yam_gello_pick_red_cube_sim.yaml
+```
 
 ## Extending with Custom Agents
 To integrate your own controller or policy:
