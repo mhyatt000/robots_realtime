@@ -34,9 +34,9 @@ robots:
 
 agent:
   _target_: robots_realtime.agents.teleoperation.gello_leader_agent.BimanualGelloLeaderAgent
-  left_port: "/dev/tty.usbmodem5AE60806691"
+  left_port: "/dev/ttyACM1"
   left_id: "left"
-  right_port: "/dev/tty.usbmodem5AE60805531"
+  right_port: "/dev/ttyACM0"
   right_id: "right"
   robot_name: "right"
   calibrate: true
