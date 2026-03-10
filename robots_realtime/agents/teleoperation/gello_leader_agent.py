@@ -73,8 +73,8 @@ class GelloLeaderAgent(Agent):
         drive_to_zero: bool = True,
         hold_gripper: bool = True,
         include_gripper: bool = False,
-        dagger_debug: bool = True,
-        dagger_debug_pose_rad: Optional[List[float]] = None,
+        dagger_debug: bool = False,
+        dagger_debug_pose_rad: Optional[List[float]] = False,
     ) -> None:
         self.robot_name = robot_name
         self.joint_signs = np.array(joint_signs or [1] * NUM_ARM_JOINTS, dtype=np.float64)
@@ -187,6 +187,134 @@ class GelloLeaderAgent(Agent):
     def close(self) -> None:
         self.teleop.disconnect()
         logger.info("GelloLeaderAgent disconnected.")
+
+    def reset(self) -> None:
+        pass
+
+
+class BimanualGelloLeaderAgent(Agent):
+    """Teleoperation agent backed by two GELLO feetech leader arms (bimanual).
+
+    Reads both leader arms and returns a combined 14-DOF action
+    ``[left_j1..6, left_grip, right_j1..6, right_grip]`` under a single
+    robot key.  This matches the layout expected by
+    ``XdofSimRobot`` when ``right_arm_only=False``.
+
+    Args:
+        left_port: Serial port for the left-arm feetech bus.
+        right_port: Serial port for the right-arm feetech bus.
+        robot_name: Key used in the returned action dict (must match the
+            robot key in the env config, e.g. ``"right"``).
+        calibrate: Whether to run calibration on connect.
+        left_joint_signs: Per-joint sign multipliers for the left arm.
+        right_joint_signs: Per-joint sign multipliers for the right arm.
+        left_joint_offsets_deg: Per-joint degree offsets for the left arm.
+        right_joint_offsets_deg: Per-joint degree offsets for the right arm.
+        use_degrees: Pass-through to ``YamActiveLeaderTeleoperatorConfig``.
+        drive_to_zero: Drive both arms to zero on startup.
+        hold_gripper: Keep gripper torque enabled on both arms.
+        include_gripper: Include the gripper value (7th element per arm).
+            Defaults to True for bimanual.
+    """
+
+    def __init__(
+        self,
+        left_port: str,
+        right_port: str,
+        left_id: str,
+        right_id: str,
+        robot_name: str = "yam_bimanual",
+        calibrate: bool = True,
+        left_joint_signs: Optional[List[int]] = None,
+        right_joint_signs: Optional[List[int]] = None,
+        left_joint_offsets_deg: Optional[List[float]] = None,
+        right_joint_offsets_deg: Optional[List[float]] = None,
+        use_degrees: bool = True,
+        drive_to_zero: bool = True,
+        hold_gripper: bool = True,
+        include_gripper: bool = True,
+    ) -> None:
+        self.left_id = left_id
+        self.right_id = right_id
+
+        self.robot_name = robot_name
+        self.include_gripper = include_gripper
+
+        self.left_joint_signs = np.array(left_joint_signs or [1] * NUM_ARM_JOINTS, dtype=np.float64)
+        self.right_joint_signs = np.array(right_joint_signs or [1] * NUM_ARM_JOINTS, dtype=np.float64)
+        self.left_joint_offsets_deg = np.array(
+            left_joint_offsets_deg or [0] * NUM_ARM_JOINTS, dtype=np.float64
+        )
+        self.right_joint_offsets_deg = np.array(
+            right_joint_offsets_deg or [0] * NUM_ARM_JOINTS, dtype=np.float64
+        )
+
+        left_cfg = YamActiveLeaderTeleoperatorConfig(port=left_port, use_degrees=use_degrees, id=left_id)
+        self.left_teleop = YamActiveLeaderTeleoperator(left_cfg)
+        self.left_teleop.connect(calibrate=calibrate)
+        logger.info("BimanualGelloLeaderAgent: left arm connected to %s", left_port)
+
+        right_cfg = YamActiveLeaderTeleoperatorConfig(port=right_port, use_degrees=use_degrees, id=right_id)
+        self.right_teleop = YamActiveLeaderTeleoperator(right_cfg)
+        self.right_teleop.connect(calibrate=calibrate)
+        logger.info("BimanualGelloLeaderAgent: right arm connected to %s", right_port)
+
+        if drive_to_zero:
+            self.left_teleop.drive_to_zero()
+            self.right_teleop.drive_to_zero()
+
+        if hold_gripper:
+            self.left_teleop.start_gripper_spring()
+            self.right_teleop.start_gripper_spring()
+
+    # ------------------------------------------------------------------ #
+    # Internal helpers
+    # ------------------------------------------------------------------ #
+
+    def _read_arm(
+        self,
+        teleop: YamActiveLeaderTeleoperator,
+        signs: np.ndarray,
+        offsets_deg: np.ndarray,
+    ) -> np.ndarray:
+        """Read one arm and return joint_rad [+ gripper] as a 1-D array."""
+        action = teleop.get_action()
+        joint_deg = np.array([action[f"joint_{i}.pos"] for i in range(1, NUM_ARM_JOINTS + 1)])
+        joint_deg = signs * joint_deg + offsets_deg
+        joint_rad = np.deg2rad(joint_deg)
+        if self.include_gripper:
+            return np.concatenate([joint_rad, [action["gripper.pos"]]])
+        return joint_rad
+
+    # ------------------------------------------------------------------ #
+    # Agent protocol
+    # ------------------------------------------------------------------ #
+
+    def act(self, obs: Dict[str, Any]) -> Dict[str, Any]:
+        """Return combined 14-DOF (or 12-DOF without gripper) action.
+
+        Layout: ``[left_j1..6, (left_grip,) right_j1..6, (right_grip,)]``
+
+        Returns:
+            ``{robot_name: {"pos": np.ndarray}}``
+        """
+        left_pos = self._read_arm(self.left_teleop, self.left_joint_signs, self.left_joint_offsets_deg)
+        right_pos = self._read_arm(self.right_teleop, self.right_joint_signs, self.right_joint_offsets_deg)
+        combined = np.concatenate([left_pos, right_pos]).astype(np.float32)
+        return {self.robot_name: {"pos": combined}}
+
+    def action_spec(self) -> Dict[str, Dict[str, Array]]:
+        n_per_arm = NUM_ARM_JOINTS + (1 if self.include_gripper else 0)
+        return {self.robot_name: {"pos": Array(shape=(2 * n_per_arm,), dtype=np.float32)}}
+
+    # ------------------------------------------------------------------ #
+    # Lifecycle
+    # ------------------------------------------------------------------ #
+
+    def close(self) -> None:
+        self.left_teleop.disconnect()
+        self.right_teleop.disconnect()
+        logger.info("BimanualGelloLeaderAgent disconnected.")
 
     def reset(self) -> None:
         pass

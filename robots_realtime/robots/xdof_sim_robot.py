@@ -125,7 +125,7 @@ class XdofSimRobot(Robot):
     1 gripper).  The left arm is held at zeros.
 
     Each call to command_joint_pos() advances physics by one control step
-    (physics_dt × control_decimation seconds) via env._step_single(), which
+    (physics_dt x control_decimation seconds) via env._step_single(), which
     is the per-tick stepping path.  env.step() is intentionally avoided as
     it is designed for chunked action-sequence inference.
 
@@ -141,8 +141,12 @@ class XdofSimRobot(Robot):
             step.  Expensive; disable for teleoperation.
         physics_dt: MuJoCo physics timestep in seconds.
         control_decimation: Number of physics steps per control step.
-            Effective control rate = 1 / (physics_dt × control_decimation).
-            Default 17 × 0.002s ≈ 30 Hz; set to 10 for ~50 Hz.
+            Effective control rate = 1 / (physics_dt x control_decimation).
+            Default 17 x 0.002s ≈ 30 Hz; set to 10 for ~50 Hz.
+        task: Task name to load (e.g. "bottle_pickup", "fruit_bowl",
+            "tabletop_sort", "handover", "stack_cups"). Uses the extensible
+            task scene system from xdof_sim.task_builder. None falls back to
+            the default yam_bimanual_scene.xml.
         scene_variant: Optional scene variant to apply at startup.
             One of "eval", "training", "hybrid".  None leaves the default
             scene as-is.
@@ -156,6 +160,7 @@ class XdofSimRobot(Robot):
         render_cameras: bool = False,
         physics_dt: float = 0.002,
         control_decimation: int = 17,
+        task: Optional[str] = "bottle_pickup",
         scene_variant: Optional[str] = None,
         viser_port: int = 8080,
     ) -> None:
@@ -168,6 +173,7 @@ class XdofSimRobot(Robot):
             render_cameras=render_cameras,
             physics_dt=physics_dt,
             control_decimation=control_decimation,
+            task=task,
         )
         self._right_arm_only = right_arm_only
         self._per_arm_dofs = 7  # 6 arm joints + 1 gripper

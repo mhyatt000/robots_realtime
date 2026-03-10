@@ -1,7 +1,8 @@
-# YAM xdof-sim MuJoCo Simulation driven by GELLO feetech leader device
+# YAM xdof-sim MuJoCo Simulation driven by two GELLO feetech leader devices
 #
-# Uses the xdof-sim MuJoCoYAMEnv (full bimanual physics) with a single GELLO
-# leader controlling the right arm.  The left arm stays at zeros.
+# Uses the xdof-sim MuJoCoYAMEnv (full bimanual physics) with both arms
+# driven by separate GELLO leaders.  The 14-DOF action layout is:
+#   [left_j1..6, left_grip, right_j1..6, right_grip]
 #
 # Control rate: physics_dt (0.002s) × control_decimation (17) ≈ 30 Hz.
 # Change control_decimation to 10 for ~50 Hz and update hz accordingly.
@@ -14,10 +15,6 @@
 # Usage:
 #   uv run python robots_realtime/envs/launch.py \
 #       --config-path configs/yam/yam_gello_xdof_sim.yaml
-#
-# Headless (render: false):
-#   uv run python robots_realtime/envs/launch.py \
-#       --config-path configs/yam/yam_gello_xdof_sim.yaml
 
 _target_: robots_realtime.envs.launch.LaunchConfig
 sim_mode: true
@@ -26,22 +23,27 @@ hz: 30.0
 robots:
   right:
     _target_: robots_realtime.robots.xdof_sim_robot.XdofSimRobot
-    right_arm_only: true
+    right_arm_only: false
     render: true
     render_cameras: false
     physics_dt: 0.002
     control_decimation: 17
+    # task: "baking_prep"
     scene_variant: "eval"
     viser_port: 8080
 
 agent:
-  _target_: robots_realtime.agents.teleoperation.gello_leader_agent.GelloLeaderAgent
-  port: "/dev/tty.usbmodem5AE60805531"
+  _target_: robots_realtime.agents.teleoperation.gello_leader_agent.BimanualGelloLeaderAgent
+  left_port: "/dev/tty.usbmodem5AE60806691"
+  left_id: "left"
+  right_port: "/dev/tty.usbmodem5AE60805531"
+  right_id: "right"
   robot_name: "right"
   calibrate: true
   drive_to_zero: true
   hold_gripper: true
   include_gripper: true
-  joint_signs: [-1, -1, -1, -1, -1, -1]
-  joint_offsets_deg: [0, 0, 0, 0, 0, 0]
-  dagger_debug: true
+  left_joint_signs: [-1, -1, -1, -1, -1, -1]
+  right_joint_signs: [-1, -1, -1, -1, -1, -1]
+  left_joint_offsets_deg: [0, 0, 0, 0, 0, 0]
+  right_joint_offsets_deg: [0, 0, 0, 0, 0, 0]
