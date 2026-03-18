@@ -19,6 +19,12 @@ import os
 # for headless (no-display) rendering instead of GLFW.
 os.environ.setdefault("MUJOCO_GL", "egl")
 
+import os
+
+# Must be set before `import mujoco` so the _render C extension picks up EGL
+# for headless (no-display) rendering instead of GLFW.
+os.environ.setdefault("MUJOCO_GL", "egl")
+
 from typing import Dict, Optional
 
 import mujoco
@@ -32,6 +38,10 @@ class _ViserSceneManager:
     Imports scene-building helpers directly from xdof_sim.examples.viser_replay
     (no modifications to the xdof-sim package required).  Only dynamic bodies
     are updated each tick; fixed geometry is uploaded once at construction time.
+
+    If camera_names is non-empty, a small MuJoCo Renderer renders each named
+    camera every tick and streams the result as a live GUI image panel in the
+    Viser sidebar (JPEG, camera_render_size × camera_render_size pixels).
 
     If camera_names is non-empty, a small MuJoCo Renderer renders each named
     camera every tick and streams the result as a live GUI image panel in the
@@ -63,6 +73,41 @@ class _ViserSceneManager:
 
         self.server = viser.ViserServer(port=port)
         print(f"Viser scene viewer: http://localhost:{port}")
+
+        # --- Camera image panels ------------------------------------------
+        # Auto-detect all cameras present in the model.
+        self._cam_names: list[str] = [
+            mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_CAMERA, i) for i in range(model.ncam)
+        ]
+
+        self._cam_renderer: Optional[mujoco.Renderer] = None
+        self._cam_handles: dict[str, viser.GuiImageHandle] = {}
+        self._last_images: dict[str, np.ndarray] = {}  # for data logging
+        self._viser_preview_size = viser_preview_size
+        if self._cam_names:
+            self._cam_renderer = mujoco.Renderer(
+                model,
+                height=record_camera_size,
+                width=record_camera_size,
+            )
+            placeholder = np.zeros((viser_preview_size, viser_preview_size, 3), dtype=np.uint8)
+            with self.server.gui.add_folder("Wrist Cameras"):
+                for name in self._cam_names:
+                    self._cam_handles[name] = self.server.gui.add_image(
+                        placeholder,
+                        label=f"{name} wrist",
+                        format="jpeg",
+                        jpeg_quality=80,
+                    )
+            print(f"  Camera feeds: {self._cam_names} — record {record_camera_size}px, preview {viser_preview_size}px")
+
+        # --- Reset button ----------------------------------------------------
+        self._reset_requested = False
+        reset_btn = self.server.gui.add_button("Reset Environment", color="red")
+
+        @reset_btn.on_click
+        def _(_) -> None:
+            self._reset_requested = True
 
         # --- Camera image panels ------------------------------------------
         # Auto-detect all cameras present in the model.
@@ -147,6 +192,14 @@ class _ViserSceneManager:
                     visible=True,
                 )
                 self._mesh_handles[body_id] = handle
+            elif visual_ids:
+                merged = _merge_geoms(model, visual_ids)
+                handle = self.server.scene.add_mesh_trimesh(
+                    f"/bodies/{body_name}",
+                    merged,
+                    visible=True,
+                )
+                self._mesh_handles[body_id] = handle
 
     def update(self) -> None:
         """Push current body poses from MjData to the viser scene."""
@@ -157,6 +210,27 @@ class _ViserSceneManager:
                 xmat = self._data.xmat[body_id].reshape(3, 3)
                 handle.wxyz = vtf.SO3.from_matrix(xmat).wxyz
             self.server.flush()
+
+        # Render and stream wrist camera images (done outside the atomic block
+        # to avoid holding the lock during the relatively expensive render).
+        if self._cam_renderer is not None:
+            for name in self._cam_names:
+                self._cam_renderer.update_scene(self._data, camera=name)
+                rgb = self._cam_renderer.render()  # (H, W, 3) uint8 at record_camera_size
+                self._last_images[name] = rgb
+                # Downscale for the viser sidebar preview if sizes differ.
+                p = self._viser_preview_size
+                if rgb.shape[0] != p:
+                    import cv2
+
+                    preview = cv2.resize(rgb, (p, p), interpolation=cv2.INTER_LINEAR)
+                else:
+                    preview = rgb
+                self._cam_handles[name].image = preview
+
+    def get_camera_images(self) -> dict[str, np.ndarray]:
+        """Return the most recently rendered camera images (copies)."""
+        return {k: v.copy() for k, v in self._last_images.items()}
 
         # Render and stream wrist camera images (done outside the atomic block
         # to avoid holding the lock during the relatively expensive render).
@@ -209,10 +283,14 @@ class XdofSimRobot(Robot):
         control_decimation: Number of physics steps per control step.
             Effective control rate = 1 / (physics_dt x control_decimation).
             Default 17 x 0.002s ≈ 30 Hz; set to 10 for ~50 Hz.
-        task: Task name to load (e.g. "bottle_pickup", "fruit_bowl",
-            "tabletop_sort", "handover", "stack_cups"). Uses the extensible
-            task scene system from xdof_sim.task_builder. None falls back to
-            the default yam_bimanual_scene.xml.
+        task: Named task scene to load — one of the keys in xdof_sim's
+            _SCENE_XMLS dict (e.g. "bottles", "marker", "dish_brush").
+            Ignored when scene_xml is set.  None falls back to the default
+            yam_bimanual_scene.xml.
+        scene_xml: Explicit path to a MuJoCo XML file.  Takes priority over
+            task.  Accepts absolute paths or paths relative to the working
+            directory.  Use this to load custom scenes not registered in
+            _SCENE_XMLS.
         scene_variant: Optional scene variant to apply at startup.
             One of "eval", "training", "hybrid".  None leaves the default
             scene as-is.
@@ -228,31 +306,61 @@ class XdofSimRobot(Robot):
         render_cameras: bool = False,
         physics_dt: float = 0.002,
         control_decimation: int = 17,
-        task: Optional[str] = "bottle_pickup",
+        task: Optional[str] = None,
+        scene_xml: Optional[str] = None,
         scene_variant: Optional[str] = None,
         viser_port: int = 8080,
         viser_preview_size: int = 244,
         record_camera_size: int = 864,
     ) -> None:
         from xdof_sim.config import get_i2rt_sim_config
-        from xdof_sim.env import MuJoCoYAMEnv
+        from xdof_sim.env import MuJoCoYAMEnv, _SCENE_XMLS
 
         config = get_i2rt_sim_config()
-        self._env = MuJoCoYAMEnv(
-            config=config,
-            render_cameras=render_cameras,
-            physics_dt=physics_dt,
-            control_decimation=control_decimation,
-            task=task,
-        )
+
+        if task == "inhand_transfer":
+            from xdof_sim.inhand_transfer_env import InHandTransferEnv
+            self._env = InHandTransferEnv(
+                config=config,
+                render_cameras=render_cameras,
+                physics_dt=physics_dt,
+                control_decimation=control_decimation,
+            )
+            self._randomizing_env = True
+        else:
+            # Resolve scene XML: explicit path > named task > env default
+            resolved_xml: Optional[str] = None
+            if scene_xml is not None:
+                resolved_xml = scene_xml
+            elif task is not None:
+                resolved_path = _SCENE_XMLS.get(task)
+                if resolved_path is None:
+                    raise ValueError(
+                        f"Unknown task '{task}'. Available: {sorted(_SCENE_XMLS.keys())}. "
+                        "Use scene_xml to load a custom XML path."
+                    )
+                resolved_xml = str(resolved_path)
+
+            self._env = MuJoCoYAMEnv(
+                config=config,
+                render_cameras=render_cameras,
+                physics_dt=physics_dt,
+                control_decimation=control_decimation,
+                scene_xml=resolved_xml,
+            )
+            self._randomizing_env = False
+
+            if scene_variant is not None:
+                from xdof_sim.scene_variants import apply_scene_variant
+                apply_scene_variant(self._env.model, scene_variant)
+
         self._right_arm_only = right_arm_only
         self._per_arm_dofs = 7  # 6 arm joints + 1 gripper
         self._left_cmd = np.zeros(self._per_arm_dofs, dtype=np.float32)
-
-        if scene_variant is not None:
-            from xdof_sim.scene_variants import apply_scene_variant
-
-            apply_scene_variant(self._env.model, scene_variant)
+        self._viser_port = viser_port
+        self._viser_preview_size = viser_preview_size
+        self._record_camera_size = record_camera_size
+        self._render = render
 
         self._env.reset()
 
@@ -262,6 +370,8 @@ class XdofSimRobot(Robot):
                 model=self._env.model,
                 data=self._env.data,
                 port=viser_port,
+                record_camera_size=record_camera_size,
+                viser_preview_size=viser_preview_size,
                 record_camera_size=record_camera_size,
                 viser_preview_size=viser_preview_size,
             )
@@ -306,7 +416,7 @@ class XdofSimRobot(Robot):
         if self._right_arm_only:
             return {"joint_pos": state[self._per_arm_dofs :].copy()}
         return {"joint_pos": state.copy()}
-
+        
     def get_camera_images(self) -> Dict[str, np.ndarray]:
         """Return the most recently rendered wrist camera images, or {} if none."""
         if self._viser is not None:
@@ -326,11 +436,23 @@ class XdofSimRobot(Robot):
 
         Resets MuJoCo state and refreshes the viser scene.  Clears the flag so
         it returns False on every subsequent call until the button is pressed again.
+        For randomizing envs (e.g. inhand_transfer), the MuJoCo model is reloaded
+        with a new object, so the viser scene is rebuilt from scratch.
         """
         if self._viser is None or not self._viser._reset_requested:
             return False
         self._viser._reset_requested = False
         self._env.reset()
+        if self._randomizing_env:
+            # Model was reloaded — rebuild the viser scene with the new model.
+            self._viser.stop()
+            self._viser = _ViserSceneManager(
+                model=self._env.model,
+                data=self._env.data,
+                port=self._viser_port,
+                record_camera_size=self._record_camera_size,
+                viser_preview_size=self._viser_preview_size,
+            )
         self._viser.update()
         return True
 
