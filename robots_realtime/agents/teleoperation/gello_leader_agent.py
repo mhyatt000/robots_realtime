@@ -303,8 +303,8 @@ class BimanualGelloLeaderAgent(Agent):
 
     Reads both leader arms and returns a combined 14-DOF action
     ``[left_j1..6, left_grip, right_j1..6, right_grip]`` under a single
-    robot key.  This matches the layout expected by
-    ``XdofSimRobot`` when ``right_arm_only=False``.
+    robot key.  This matches the 14-DOF bimanual layout
+    ``[left_j1..6, left_grip, right_j1..6, right_grip]``.
 
     Recording signal — ``act()`` emits ``{"_record": bool}`` alongside the
     action when ``record_on_intervention=True`` (either arm hold-current

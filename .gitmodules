@@ -14,6 +14,3 @@
 [submodule "dependencies/lerobot_teleoperator_yamactiveleader"]
 	path = dependencies/lerobot_teleoperator_yamactiveleader
 	url = https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader.git
-[submodule "dependencies/xdof-sim"]
-	path = dependencies/xdof-sim
-	url = https://github.com/abc-dataset/xdof-sim.git
