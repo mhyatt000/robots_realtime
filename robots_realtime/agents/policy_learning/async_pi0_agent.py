@@ -13,7 +13,6 @@ from robots_realtime.learning.diffusion_policy.policy_network import ModelConfig
 from robots_realtime.agents.agent import PolicyAgent
 from robots_realtime.agents.constants import ActionSpec
 from robots_realtime.robots.utils import Rate
-from robots_realtime.utils.portal_utils import remote
 
 
 class AsyncDiffusionAgent(PolicyAgent):
@@ -77,7 +76,6 @@ class AsyncDiffusionAgent(PolicyAgent):
                 )
             )
 
-    @remote()
     def get_metadata(self) -> Dict[str, Any]:
         return {
             "action_horizon": self.action_horizon,
@@ -105,7 +103,6 @@ class AsyncDiffusionAgent(PolicyAgent):
             **images,
         }
 
-    @remote()
     def act(self, obs):
         super_action = super().act(obs)
         a = np.array(self(obs))
@@ -132,7 +129,6 @@ class AsyncDiffusionAgent(PolicyAgent):
                 **super_action,
             }
 
-    @remote(serialization_needed=True)
     def action_spec(self) -> ActionSpec:
         """Define the action specification."""
         if self.use_joint_state_as_action:

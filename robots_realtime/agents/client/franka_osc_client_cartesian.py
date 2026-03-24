@@ -17,7 +17,6 @@ from robots_realtime.agents.agent import Agent
 from robots_realtime.robots.inverse_kinematics.franka_pyroki import FrankaPyroki
 from robots_realtime.sensors.cameras.camera_utils import obs_get_rgb, resize_with_center_crop
 from robots_realtime.utils.depth_utils import depth_color_to_pointcloud
-from robots_realtime.utils.portal_utils import remote
 from robots_realtime.utils.server_client_utils import SyncMsgpackNumpyClient
 
 
@@ -276,7 +275,6 @@ class FrankaOscClientCartesianAgent(Agent):
 
         return action
 
-    @remote(serialization_needed=True)
     def action_spec(self) -> Dict[str, Dict[str, Array]]:
         """Expose the joint-position action specification for Franka OSC."""
 

@@ -67,10 +67,6 @@ class Subscriber:
                 except zmq.Again:
                     pass
 
-    def drain(self) -> int:
-        """No-op — draining is handled by the background thread."""
-        return 0
-
     def drain_one(self, timeout_ms: int = 50) -> bool:
         """Block up to *timeout_ms* waiting for any new message."""
         import time
