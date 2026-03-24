@@ -34,7 +34,16 @@ dependencies = [
     "lerobot[feetech]",
     "lerobot_teleoperator_yamactiveleader",
     "xdof_sdk",
+    "gymnasium>=0.29",
+    "pyzmq>=27.1.0",
+    "mcap>=1.3.1",
+    "mcap-protobuf-support>=0.5.4",
+    "protobuf>=6.33.1",
 ]
+
+[project.scripts]
+rr-session = "robots_realtime.__main__:main"
+rr-replay  = "robots_realtime.cli.replay:main"
 
 [project.optional-dependencies]
 sensors = [
@@ -45,6 +54,9 @@ franka_panda = [
 ]
 mjlab_sim = [
     "mjlab",
+]
+sim = [
+    "gymnasium>=0.29",
 ]
 
 [tool.uv.sources]
