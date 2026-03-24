@@ -102,8 +102,6 @@ uv run rr-replay recordings/20260323/episode_175805_0473b1bc/
 
 Opens a Viser viewer at `http://localhost:8080`. Two modes: **qpos** (exact, restores recorded state) and **physics** (re-simulates from actions).
 
-> Commands run against the project venv via `uv run`. Alternatively: `source .venv/bin/activate` and drop the prefix.
-
 # TODOS / Roadmap
 * [ ] Test + verify policy deploy pipeline
 * [ ] DAgger on-policy intervention data collection
