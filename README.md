@@ -11,9 +11,7 @@ The collection stack is as modular as the policy itself — agents (GELLO arms, 
 For building YAM active leader arms: [lerobot_teleoperator_yamactiveleader](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
 
 ## Misc. Documentation
-[Architecture & recording format](docs/architecture.md) 
-
-[Extending (new agents, robots, cameras)](docs/extending.md)
+[Architecture & recording format](docs/architecture.md) · [Extending (new agents, robots, cameras)](docs/extending.md) · [VR streaming to Quest](docs/vr_streaming.md)
 
 
 ---
