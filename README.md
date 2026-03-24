@@ -4,14 +4,25 @@ A research codebase for real-time robot teleoperation, data collection, and poli
 
 The collection stack is as modular as the policy itself — agents (GELLO arms, learned policies, interactive IK gizmos) and environments (physical robots, sensors, cameras, MuJoCo sim) are composed at runtime from a YAML config. Swapping a GELLO for a trained policy, or real hardware for sim, is a one-line change. The recording format (MCAP + MP4) is identical regardless — so training pipelines don't need to change when the data source does.
 
-<img src="media/yam_realtime.gif" width="500">
-<img src="media/franka_realtime2.gif" width="500">
-<img src="media/yam_active_leader_dagger.gif" width="500">
+<table>
+<tr>
+<td><img src="media/yam_realtime.gif" width="360"></td>
+<td><img src="media/franka_realtime2.gif" width="360"></td>
+</tr>
+<tr>
+<td><img src="media/yam_active_leader_dagger.gif" width="360"></td>
+<td><img src="media/rr_vr_support.gif" width="360"></td>
+</tr>
+</table>
 
-For building YAM active leader arms: [lerobot_teleoperator_yamactiveleader](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
+To build your own YAM active leader arms refer to: [lerobot_teleoperator_yamactiveleader](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
 
-## Misc. Documentation
-[Architecture & recording format](docs/architecture.md) · [Extending (new agents, robots, cameras)](docs/extending.md) · [VR streaming to Quest](docs/vr_streaming.md)
+## Other Documentation
+[Architecture & recording format](docs/architecture.md) 
+
+[Extending (new agents, robots, cameras)](docs/extending.md) 
+
+[VR streaming to Quest](docs/vr_streaming.md)
 
 
 ---
