@@ -51,27 +51,69 @@ If using YAM arms, configure YAM arms CAN chain according to instructions from t
 ```bash
 uv run rr-session configs/yam/yam_sim_gello_teleop.yaml
 ```
-Then you should see the terminal populate with TUI (TerminalUI) 
+Then you should see the terminal populate with a rich TUI session:
 ```
-╭───────────────────────────────────────────────────────────────────────────────────── robots_realtime ─────────────────────────────────────────────────────────────────────────────────────╮
-│   NODE                                                   STATUS                                      HZ    TOPICS                                                                         │
-│   gello_left                                             ● live                                   254.3    joint_pos                                                                      │
-│   gello_right                                            ● live                                   254.3    joint_pos                                                                      │
-│   yam                                                    ● live                                    29.7    left_state, right_state                                                        │
-│ http://localhost:8765  (viser)  http://localhost:8012  (vr)                                                                                                                               │
-│ ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
-│ ○  idle                                                                                                                                                 [r] record  [d] discard  [q] quit │
-│ ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── │
-│ [gello_left] === left YamActiveLeaderTeleoperator (port=/dev/ttyACM0) ===                                                                                               │
-│ [gello_right] === right YamActiveLeaderTeleoperator (port=/dev/ttyACM1) ===                                                                                             │                                                                                             │
-│ [yam] ╭────── viser (listening *:8765) ───────╮                                                                                                                                           │
-│ [yam] │             ╷                         │                                                                                                                                           │
-│ [yam] │   HTTP      │ http://localhost:8765   │                                                                                                                                           │
-│ [yam] │   Websocket │ ws://localhost:8765     │                                                                                                                                           │
-│ [yam] │             ╵                         │                                                                                                                                           │
-│ [yam] ╰───────────────────────────────────────╯                                                                                                                                           │
-│   logs: /tmp/rr_logs_n8map8js                                                                                                                                                             │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────── robots_realtime ────────────────────────────────╮
+│   NODE                STATUS             HZ    TOPICS                          │
+│   gello_left          ● live          255.8    joint_pos                       │
+│   gello_right         ● live          255.8    joint_pos                       │
+│   yam                 ● live           29.6    left_state, right_state         │
+│ http://localhost:8765  (viser)  http://localhost:8012  (vr)                    │
+│ ────────────────────────────────────────────────────────────────────────────── │
+│ ○  idle                                      [r] record  [d] discard  [q] quit │
+│ ────────────────────────────────────────────────────────────────────────────── │
+│ [gello_left]                                                                   │
+│ [gello_left] === left YamActiveLeaderTeleoperator motor diagnostics            │
+│ (port=/dev/ttyACM0) ===                                                        │
+│ [gello_left]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode      │
+│ Temp°C  Pos(deg)                                                               │
+│ [gello_left]   -------  -------  -------  ------  ------  --  --  -  ----      │
+│ ------  --------                                                               │
+│ [gello_left]   joint_1       45     1000    1147    2949  32  32  0     0      │
+│ 26       0.0                                                                   │
+│ [gello_left]   joint_2       45     1000     124    3972  32  32  0     0      │
+│ 25      -0.2                                                                   │
+│ [gello_left]   joint_3       45     1000     244    3852  32  32  0     0      │
+│ 26      -0.2                                                                   │
+│ [gello_left]   joint_4       45     1000    1005    3091  32  32  0     0      │
+│ 27       4.3                                                                   │
+│ [gello_left]   joint_5       45     1000    1110    2986  32  32  0     0      │
+│ 27       0.3                                                                   │
+│ [gello_left]   joint_6       45     1000     808    3288  32  32  0     0      │
+│ 27       0.4                                                                   │
+│ [gello_left]   gripper      400     1000    1381    2715  32  32  0     0      │
+│ 27       0.6                                                                   │
+│ [gello_left]                                                                   │
+│ [gello_right]                                                                  │
+│ [gello_right] === right YamActiveLeaderTeleoperator motor diagnostics          │
+│ (port=/dev/ttyACM1) ===                                                        │
+│ [gello_right]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode     │
+│ Temp°C  Pos(deg)                                                               │
+│ [gello_right]   -------  -------  -------  ------  ------  --  --  -  ----     │
+│ ------  --------                                                               │
+│ [gello_right]   joint_1       45     1000    1161    2935  32  32  0     0     │
+│ 27      -0.3                                                                   │
+│ [gello_right]   joint_2       45     1000     182    3914  32  32  0     0     │
+│ 25      -0.1                                                                   │
+│ [gello_right]   joint_3       45     1000     239    3857  32  32  0     0     │
+│ 26      -0.3                                                                   │
+│ [gello_right]   joint_4       45     1000    1000    3096  32  32  0     0     │
+│ 26       2.6                                                                   │
+│ [gello_right]   joint_5       45     1000    1106    2990  32  32  0     0     │
+│ 26      -0.1                                                                   │
+│ [gello_right]   joint_6       45     1000     839    3257  32  32  0     0     │
+│ 27      -0.1                                                                   │
+│ [gello_right]   gripper      400     1000    1418    2678  32  32  0     0     │
+│ 28      -0.2                                                                   │
+│ [gello_right]                                                                  │
+│ [yam] ╭────── viser (listening *:8765) ───────╮                                │
+│ [yam] │             ╷                         │                                │
+│ [yam] │   HTTP      │ http://localhost:8765   │                                │
+│ [yam] │   Websocket │ ws://localhost:8765     │                                │
+│ [yam] │             ╵                         │                                │
+│ [yam] ╰───────────────────────────────────────╯                                │
+│   logs: /tmp/rr_logs_7hhz62am                                                  │
+╰────────────────────────────────────────────────────────────────────────────────╯
 ```
 Look under configs for other existing configs
 
