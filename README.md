@@ -34,9 +34,10 @@ To build your own YAM active leader arms refer to: [lerobot_teleoperator_yamacti
 
 ```bash
 git clone --recurse-submodules https://github.com/uynitsuj/robots_realtime.git
+cd robots_realtime
+
 # if already cloned, or some of the submodules are incompletely cloned, run
 git submodule update --init --recursive
-cd robots_realtime
 uv venv --python 3.11 && uv pip install -e .
 ```
 
