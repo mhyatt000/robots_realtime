@@ -2,7 +2,10 @@
 
 A research codebase for real-time robot teleoperation, data collection, and policy deployment.
 
-The collection stack is as modular as the policy itself — agents (GELLO arms, learned policies, interactive IK gizmos) and environments (physical robots, sensors, cameras, MuJoCo sim) are composed at runtime from a YAML config. Swapping a GELLO for a trained policy, or real hardware for sim, is a one-line change. The recording format (MCAP + MP4) is identical regardless — so training pipelines don't need to change when the data source does.
+Why robots_realtime?
+- Unified Pipeline: Collect data in MuJoCo sim or on real hardware platforms, train a policy, and deploy with the same infrastructure.
+- Hardware Agnostic: Switch between GELLO leader arms, IK gizmos, Franka or I2RT YAM robot hardware via runtime YAML configs.
+- High Frequency: Built on ZeroMQ nodes for asynchronous, low-latency real-time control essential for reactive policies.
 
 <table>
 <tr>
