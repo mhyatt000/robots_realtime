@@ -39,20 +39,14 @@ uv venv --python 3.11 && uv pip install -e .
 
 ## Usage
 
-### Run a session (Teleop Data Collection)
+### Run a session (Teleop Data Collection or Deploy a Policy)
 
 ```bash
-uv run rr-session configs/sessions/yam_sim_gello_teleop.yaml
+uv run rr-session configs/yam/yam_sim_gello_teleop.yaml
 ```
+Look under configs for other existing configs
 
-| Config | Description |
-|--------|-------------|
-| `yam_sim_dummy.yaml` | Synthetic agents → MuJoCo sim. No hardware needed. |
-| `yam_sim_gello_teleop.yaml` | GELLO arms → MuJoCo sim + Viser viewer |
-| `yam_bimanual_gello_teleop.yaml` | GELLO arms → physical YAM arms + cameras |
-| `franka_viser_teleop.yaml` | Browser IK gizmo → Franka Panda + camera |
-
-### Replay a sim episode
+### Replay an episode
 
 ```bash
 uv run rr-replay recordings/20260323/episode_175805_0473b1bc/
