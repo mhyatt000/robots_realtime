@@ -41,10 +41,12 @@ uv venv --python 3.11 && uv pip install -e .
 ```
 
 ---
+## Configuration
+If using YAM arms, configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 
-## Usage
+## Usage / Quickstart
 
-### Run a session (Teleop Data Collection or Deploy a Policy)
+### Run a teleop data collection session in sim using [3d printed leader arms](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
 
 ```bash
 uv run rr-session configs/yam/yam_sim_gello_teleop.yaml
