@@ -2,7 +2,7 @@
 
 A research codebase for real-time robot teleoperation, data collection, and policy deployment.
 
-Why robots_realtime?
+### Why robots_realtime?
 - **Unified Pipeline:** Collect data in MuJoCo sim or on real hardware platforms, train a policy, and deploy with the same infrastructure.
 - **Modular Stack:** Switch between GELLO leader arms, IK gizmos, Franka or I2RT YAM robot hardware via runtime YAML configs.
 - **High Frequency:** Built on ZeroMQ nodes for asynchronous, low-latency real-time control essential for reactive policies.
