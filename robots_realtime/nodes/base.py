@@ -63,6 +63,11 @@ class Node(ABC):
     publish_freq: float | None = None
     subscriber_driven: bool = False
 
+    _step_count: int = 0
+    _step_hz: float = 0.0
+    _last_stats_t: float = 0.0
+    _stats_interval: float = 1.0
+
     def __init__(
         self,
         name: str | None = None,
@@ -182,6 +187,9 @@ class Node(ABC):
 
         self.setup()
 
+        self._step_count = 0
+        self._last_stats_t = time.perf_counter()
+
         try:
             if self.subscriber_driven:
                 self._run_subscriber_driven()
@@ -196,15 +204,29 @@ class Node(ABC):
             if self._subscriber:
                 self._subscriber.close()
 
+    def _tick(self) -> None:
+        """Count one step and publish step_hz once per _stats_interval seconds."""
+        self._step_count += 1
+        now = time.perf_counter()
+        elapsed = now - self._last_stats_t
+        if elapsed >= self._stats_interval:
+            self._step_hz = self._step_count / elapsed
+            self._step_count = 0
+            self._last_stats_t = now
+            if self._publisher is not None:
+                self.publish("_step_hz", {"step_hz": self._step_hz})
+
     def _run_flat_out(self) -> None:
         while not self._stop:
             self.step()
+            self._tick()
 
     def _run_fixed_rate(self) -> None:
         period = 1.0 / self.poll_freq  # type: ignore[operator]
         next_t = time.perf_counter()
         while not self._stop:
             self.step()
+            self._tick()
             next_t += period
             remaining = next_t - time.perf_counter()
             if remaining > 3e-4:
@@ -219,6 +241,7 @@ class Node(ABC):
             self._subscriber.drain_one(timeout_ms=timeout_ms)
             self._subscriber.drain()   # consume any burst that arrived
             self.step()
+            self._tick()
 
     def stop(self) -> None:
         self._stop = True
@@ -255,6 +278,14 @@ def _host_worker(
         _log_file = open(log_path, "w", buffering=1)
         sys.stdout = _log_file
         sys.stderr = _log_file
+
+    import logging as _logging
+    _logging.basicConfig(
+        stream=sys.stderr,
+        level=_logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
     ctx = zmq.Context()
     ctrl = ctx.socket(zmq.REP)

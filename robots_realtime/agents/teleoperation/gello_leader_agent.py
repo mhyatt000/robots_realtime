@@ -7,7 +7,8 @@ class from the lerobot plugin.
 
 import logging
 import threading
-from collections import deque
+import time
+from collections import defaultdict, deque
 from typing import Any, Dict, List, Optional
 
 import lerobot.robots  # noqa: F401 — resolve circular import in lerobot
@@ -98,6 +99,7 @@ class GelloLeaderAgent(Agent):
         dagger_debug: bool = False,
         dagger_debug_pose_rad: Optional[List[float]] = False,
         record_on_intervention: bool = False,
+        profile: bool = False,
     ) -> None:
         self.robot_name = robot_name
         self.joint_signs = np.array(joint_signs or [1] * NUM_ARM_JOINTS, dtype=np.float64)
@@ -148,6 +150,14 @@ class GelloLeaderAgent(Agent):
         if dither:
             self.teleop.start_arm_dither()
 
+        self._profile = profile
+        self._prof_accum: dict[str, list[float]] = defaultdict(list)
+        self._prof_act_times: list[float] = []
+        self._prof_last_log = time.perf_counter()
+        self._prof_log_interval = 5.0  # log every 5 seconds
+        if profile:
+            self._install_bus_profiler()
+
         if dagger_debug:
             pose = np.array(dagger_debug_pose_rad or self.DAGGER_DEBUG_POSE_RAD, dtype=np.float64)
             # Invert agent transform: output_rad = deg2rad(signs * leader_deg + offsets)
@@ -162,6 +172,67 @@ class GelloLeaderAgent(Agent):
             self.teleop.drive_to_config(target_dict)
             self.teleop.start_arm_hold()
             logger.info("DAgger debug hold armed at pose (rad): %s", pose)
+
+    # ------------------------------------------------------------------ #
+    # Bus profiler
+    # ------------------------------------------------------------------ #
+
+    def _install_bus_profiler(self) -> None:
+        """Monkey-patch bus.sync_read / sync_write to accumulate per-call timings."""
+        bus = self.teleop.bus
+        accum = self._prof_accum
+        _orig_sync_read = bus.sync_read
+        _orig_sync_write = bus.sync_write
+
+        def _timed_sync_read(data_name, *args, **kwargs):
+            t = time.perf_counter()
+            result = _orig_sync_read(data_name, *args, **kwargs)
+            accum[f"read:{data_name}"].append((time.perf_counter() - t) * 1e3)
+            return result
+
+        def _timed_sync_write(data_name, *args, **kwargs):
+            t = time.perf_counter()
+            result = _orig_sync_write(data_name, *args, **kwargs)
+            accum[f"write:{data_name}"].append((time.perf_counter() - t) * 1e3)
+            return result
+
+        bus.sync_read = _timed_sync_read
+        bus.sync_write = _timed_sync_write
+        logger.info("[%s] bus profiler installed", self.robot_name)
+
+    def _maybe_log_profile(self) -> None:
+        now = time.perf_counter()
+        if now - self._prof_last_log < self._prof_log_interval:
+            return
+        self._prof_last_log = now
+
+        lines = [f"[{self.robot_name}] --- act() timing breakdown (last {self._prof_log_interval:.0f}s) ---"]
+
+        if self._prof_act_times:
+            ts = self._prof_act_times
+            lines.append(
+                f"  act() total : n={len(ts):4d}  "
+                f"mean={sum(ts)/len(ts):6.2f}ms  "
+                f"p50={sorted(ts)[len(ts)//2]:6.2f}ms  "
+                f"p95={sorted(ts)[int(len(ts)*0.95)]:6.2f}ms  "
+                f"max={max(ts):6.2f}ms"
+            )
+            self._prof_act_times.clear()
+
+        for key in sorted(self._prof_accum):
+            ts = self._prof_accum[key]
+            if not ts:
+                continue
+            lines.append(
+                f"  {key:<35s}: n={len(ts):4d}  "
+                f"mean={sum(ts)/len(ts):6.2f}ms  "
+                f"p50={sorted(ts)[len(ts)//2]:6.2f}ms  "
+                f"p95={sorted(ts)[int(len(ts)*0.95)]:6.2f}ms  "
+                f"max={max(ts):6.2f}ms"
+            )
+            ts.clear()
+
+        logger.info("\n".join(lines))
 
     # ------------------------------------------------------------------ #
     # DAgger intervention support
@@ -197,6 +268,8 @@ class GelloLeaderAgent(Agent):
             in radians (optionally followed by 1 gripper value if
             *include_gripper* is True).
         """
+        _t0 = time.perf_counter() if self._profile else 0.0
+
         # --- Hold mode: return held config and monitor for intervention ---
         # Only active when _held_action was explicitly set (dagger_debug mode).
         # During normal teleop, start_arm_hold() runs on the device but we
@@ -230,6 +303,11 @@ class GelloLeaderAgent(Agent):
         out: Dict[str, Any] = {self.robot_name: {"pos": pos.astype(np.float32)}}
         if self.record_on_intervention:
             out["_record"] = bool(self.teleop.is_arm_hold_intervening)
+
+        if self._profile:
+            self._prof_act_times.append((time.perf_counter() - _t0) * 1e3)
+            self._maybe_log_profile()
+
         return out
 
     def action_spec(self) -> Dict[str, Dict[str, Array]]:

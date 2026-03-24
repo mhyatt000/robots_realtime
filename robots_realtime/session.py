@@ -53,8 +53,14 @@ def _node_descriptor(node) -> dict:
 class NodeStatus:
     name: str
     alive: bool = True
-    hz: float = 0.0
+    pub_hz: float = 0.0
+    step_hz: float = 0.0
     _timestamps: dict[str, deque] = field(default_factory=dict, repr=False)
+
+    @property
+    def hz(self) -> float:
+        """Backwards-compatible alias for pub_hz."""
+        return self.pub_hz
 
     def record_message(self, topic_suffix: str) -> None:
         buf = self._timestamps.setdefault(topic_suffix, deque(maxlen=_HZ_WINDOW))
@@ -62,7 +68,7 @@ class NodeStatus:
         best = max(self._timestamps.values(), key=len)
         if len(best) >= 2:
             span = best[-1] - best[0]
-            self.hz = (len(best) - 1) / span if span > 0 else 0.0
+            self.pub_hz = (len(best) - 1) / span if span > 0 else 0.0
 
 
 class Session:
@@ -323,7 +329,18 @@ class Session:
                 if node_name not in node_names:
                     continue
 
-                # Measure Hz
+                # Internal step-rate report from the node process
+                if topic_suffix == "_step_hz":
+                    try:
+                        envelope = unpack(payload_b)
+                        self._status[node_name].step_hz = float(
+                            envelope.get("data", {}).get("step_hz", 0.0)
+                        )
+                    except Exception:
+                        pass
+                    continue
+
+                # Measure publish Hz
                 self._status[node_name].record_message(topic_suffix)
 
                 # Handle record signal from gello (or any configured topic)

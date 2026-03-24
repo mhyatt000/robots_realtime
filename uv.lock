@@ -1208,7 +1208,8 @@ wheels = [
 
 [[package]]
 name = "jaxls"
-source = { editable = "dependencies/jaxls" }
+version = "0.0.0"
+source = { git = "https://github.com/brentyi/jaxls.git#5f766d3b09364a96d83497de2325a835d0e23dc4" }
 dependencies = [
     { name = "jax" },
     { name = "jax-dataclasses" },
@@ -1220,43 +1221,6 @@ dependencies = [
     { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "fast-simplification", marker = "extra == 'docs'" },
-    { name = "furo", marker = "extra == 'docs'", specifier = ">=2024.0.0" },
-    { name = "ipykernel", marker = "extra == 'docs'" },
-    { name = "jax", specifier = ">=0.4.0" },
-    { name = "jax-dataclasses", specifier = ">=1.6.2" },
-    { name = "jaxlib" },
-    { name = "jaxlie", specifier = ">=1.0.0" },
-    { name = "jupyterlab", marker = "extra == 'docs'" },
-    { name = "libcst", marker = "extra == 'dev'" },
-    { name = "loguru" },
-    { name = "matplotlib", marker = "extra == 'docs'" },
-    { name = "myst-nb", marker = "extra == 'docs'", specifier = ">=1.0.0" },
-    { name = "nbconvert", marker = "extra == 'dev'" },
-    { name = "opencv-python", marker = "extra == 'docs'" },
-    { name = "plotly", marker = "extra == 'docs'" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.308" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "rich", specifier = ">=13.0.0" },
-    { name = "robot-descriptions", marker = "extra == 'docs'" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "scikit-sparse", marker = "extra == 'cholmod'" },
-    { name = "scikit-sparse", marker = "extra == 'docs'" },
-    { name = "scipy", marker = "extra == 'docs'" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.0.0" },
-    { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.0" },
-    { name = "termcolor" },
-    { name = "tqdm" },
-    { name = "trimesh", marker = "extra == 'docs'" },
-    { name = "typing-extensions", specifier = ">=4.5.0" },
-    { name = "tyro", marker = "extra == 'docs'" },
-    { name = "viser", marker = "extra == 'dev'" },
-    { name = "yourdfpy", marker = "extra == 'docs'" },
-]
-provides-extras = ["cholmod", "dev", "docs"]
 
 [[package]]
 name = "jaxtyping"
@@ -2708,12 +2672,13 @@ wheels = [
 [[package]]
 name = "pyroki"
 version = "0.0.0"
-source = { editable = "dependencies/pyroki" }
+source = { git = "https://github.com/chungmin99/pyroki.git?rev=59aa21f#59aa21ffc766533c66d22ff38dd6717e176f19c8" }
 dependencies = [
     { name = "jax" },
     { name = "jax-dataclasses" },
     { name = "jaxlib" },
     { name = "jaxlie" },
+    { name = "jaxls" },
     { name = "jaxtyping" },
     { name = "loguru" },
     { name = "pyliblzfse" },
@@ -2723,28 +2688,6 @@ dependencies = [
     { name = "viser" },
     { name = "yourdfpy" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "jax", specifier = ">=0.4.0" },
-    { name = "jax-dataclasses", specifier = ">=1.0.0" },
-    { name = "jaxlib" },
-    { name = "jaxlie", specifier = ">=1.0.0" },
-    { name = "jaxtyping" },
-    { name = "loguru" },
-    { name = "m2r2", marker = "extra == 'dev'" },
-    { name = "pyliblzfse" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.308" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "robot-descriptions" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "scikit-sparse", marker = "extra == 'dev'" },
-    { name = "trimesh" },
-    { name = "tyro" },
-    { name = "viser" },
-    { name = "yourdfpy" },
-]
-provides-extras = ["dev"]
 
 [[package]]
 name = "pyserial"
@@ -3087,7 +3030,7 @@ requires-dist = [
     { name = "gymnasium", specifier = ">=0.29" },
     { name = "gymnasium", marker = "extra == 'sim'", specifier = ">=0.29" },
     { name = "i2rt", editable = "dependencies/i2rt" },
-    { name = "jaxls", editable = "dependencies/jaxls" },
+    { name = "jaxls", git = "https://github.com/brentyi/jaxls.git?rev=5f766d3" },
     { name = "lerobot", extras = ["feetech"] },
     { name = "lerobot-teleoperator-yamactiveleader", editable = "dependencies/lerobot_teleoperator_yamactiveleader" },
     { name = "matplotlib" },
@@ -3103,7 +3046,7 @@ requires-dist = [
     { name = "panda-python", marker = "extra == 'franka-panda'", path = "dependencies/panda_py_0.7.5_libfranka_0.10.0/panda_python-0.7.5+libfranka.0.10.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
     { name = "portal" },
     { name = "protobuf", specifier = ">=6.33.1" },
-    { name = "pyroki", editable = "dependencies/pyroki" },
+    { name = "pyroki", git = "https://github.com/chungmin99/pyroki.git?rev=59aa21f" },
     { name = "pyzed", marker = "extra == 'sensors'", path = "dependencies/pyzed-5.1-cp311-cp311-linux_x86_64.whl" },
     { name = "pyzmq", specifier = ">=27.1.0" },
     { name = "robot-descriptions" },

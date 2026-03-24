@@ -30,7 +30,8 @@ def _make_table(session) -> Table:
     )
     table.add_column("NODE",   style="bold")
     table.add_column("STATUS", justify="center")
-    table.add_column("HZ",     justify="right")
+    table.add_column("STEP(HZ)",   justify="right")
+    table.add_column("PUB(HZ)",    justify="right")
     table.add_column("TOPICS", style="dim")
 
     for st in session.node_statuses():
@@ -38,11 +39,12 @@ def _make_table(session) -> Table:
         label = Text("live" if st.alive else "dead", style="green" if st.alive else "red")
         status_cell = dot + label
 
-        hz_val = f"{st.hz:>6.1f}" if st.hz > 0 else Text("  ---", style="dim")
+        step_val = f"{st.step_hz:>6.1f}" if st.step_hz > 0 else Text("  ---", style="dim")
+        pub_val  = f"{st.pub_hz:>6.1f}"  if st.pub_hz  > 0 else Text("  ---", style="dim")
 
-        topics = ", ".join(st._timestamps.keys()) or "—"
+        topics = ", ".join(t for t in st._timestamps.keys() if not t.startswith("_")) or "—"
 
-        table.add_row(st.name, status_cell, hz_val, topics)
+        table.add_row(st.name, status_cell, step_val, pub_val, topics)
 
     return table
 

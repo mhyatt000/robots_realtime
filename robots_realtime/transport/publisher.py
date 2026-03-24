@@ -55,8 +55,8 @@ class Publisher:
         now = time.time()
         ts_val = ts if ts is not None else now
 
-        # Always record at full poll rate
-        if self._writer is not None and self._writer.is_open:
+        # Always record at full poll rate; skip internal topics (prefixed with _)
+        if self._writer is not None and self._writer.is_open and not topic_suffix.startswith("_"):
             self._writer.write(topic_suffix, ts_val, data)
 
         # Throttle ZMQ bus sends
