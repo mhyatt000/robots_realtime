@@ -62,50 +62,30 @@ Then you should see the terminal populate with a rich TUI session:
 │ ────────────────────────────────────────────────────────────────────────────── │
 │ ○  idle                                      [r] record  [d] discard  [q] quit │
 │ ────────────────────────────────────────────────────────────────────────────── │
-│ [gello_left]                                                                   │
 │ [gello_left] === left YamActiveLeaderTeleoperator motor diagnostics            │
 │ (port=/dev/ttyACM0) ===                                                        │
 │ [gello_left]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode      │
-│ Temp°C  Pos(deg)                                                               │
 │ [gello_left]   -------  -------  -------  ------  ------  --  --  -  ----      │
 │ ------  --------                                                               │
 │ [gello_left]   joint_1       45     1000    1147    2949  32  32  0     0      │
-│ 26       0.0                                                                   │
 │ [gello_left]   joint_2       45     1000     124    3972  32  32  0     0      │
-│ 25      -0.2                                                                   │
 │ [gello_left]   joint_3       45     1000     244    3852  32  32  0     0      │
-│ 26      -0.2                                                                   │
 │ [gello_left]   joint_4       45     1000    1005    3091  32  32  0     0      │
-│ 27       4.3                                                                   │
 │ [gello_left]   joint_5       45     1000    1110    2986  32  32  0     0      │
-│ 27       0.3                                                                   │
 │ [gello_left]   joint_6       45     1000     808    3288  32  32  0     0      │
-│ 27       0.4                                                                   │
 │ [gello_left]   gripper      400     1000    1381    2715  32  32  0     0      │
-│ 27       0.6                                                                   │
-│ [gello_left]                                                                   │
-│ [gello_right]                                                                  │
 │ [gello_right] === right YamActiveLeaderTeleoperator motor diagnostics          │
 │ (port=/dev/ttyACM1) ===                                                        │
 │ [gello_right]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode     │
-│ Temp°C  Pos(deg)                                                               │
 │ [gello_right]   -------  -------  -------  ------  ------  --  --  -  ----     │
 │ ------  --------                                                               │
 │ [gello_right]   joint_1       45     1000    1161    2935  32  32  0     0     │
-│ 27      -0.3                                                                   │
 │ [gello_right]   joint_2       45     1000     182    3914  32  32  0     0     │
-│ 25      -0.1                                                                   │
 │ [gello_right]   joint_3       45     1000     239    3857  32  32  0     0     │
-│ 26      -0.3                                                                   │
 │ [gello_right]   joint_4       45     1000    1000    3096  32  32  0     0     │
-│ 26       2.6                                                                   │
 │ [gello_right]   joint_5       45     1000    1106    2990  32  32  0     0     │
-│ 26      -0.1                                                                   │
 │ [gello_right]   joint_6       45     1000     839    3257  32  32  0     0     │
-│ 27      -0.1                                                                   │
 │ [gello_right]   gripper      400     1000    1418    2678  32  32  0     0     │
-│ 28      -0.2                                                                   │
-│ [gello_right]                                                                  │
 │ [yam] ╭────── viser (listening *:8765) ───────╮                                │
 │ [yam] │             ╷                         │                                │
 │ [yam] │   HTTP      │ http://localhost:8765   │                                │
