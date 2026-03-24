@@ -213,7 +213,7 @@ class EpisodeReplayViewer:
     ):
         import viser
         import viser.transforms as vtf
-        from robots_realtime.nodes.sim._mujoco_viser import (
+        from robots_realtime.runtime.sim._mujoco_viser import (
             _get_body_name,
             _is_fixed_body,
             _merge_geoms,
