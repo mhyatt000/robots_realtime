@@ -66,7 +66,6 @@ Then you should see the terminal populate with a rich TUI session:
 │ (port=/dev/ttyACM0) ===                                                        │
 │ [gello_left]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode      │
 │ [gello_left]   -------  -------  -------  ------  ------  --  --  -  ----      │
-│ ------  --------                                                               │
 │ [gello_left]   joint_1       45     1000    1147    2949  32  32  0     0      │
 │ [gello_left]   joint_2       45     1000     124    3972  32  32  0     0      │
 │ [gello_left]   joint_3       45     1000     244    3852  32  32  0     0      │
@@ -78,7 +77,6 @@ Then you should see the terminal populate with a rich TUI session:
 │ (port=/dev/ttyACM1) ===                                                        │
 │ [gello_right]   Motor    TorqLim  MaxTorq  MinPos  MaxPos   P   D  I  Mode     │
 │ [gello_right]   -------  -------  -------  ------  ------  --  --  -  ----     │
-│ ------  --------                                                               │
 │ [gello_right]   joint_1       45     1000    1161    2935  32  32  0     0     │
 │ [gello_right]   joint_2       45     1000     182    3914  32  32  0     0     │
 │ [gello_right]   joint_3       45     1000     239    3857  32  32  0     0     │
