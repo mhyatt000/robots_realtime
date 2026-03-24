@@ -98,7 +98,15 @@ class RobotNode(Node):
         if self._cmd_topic:
             cmd = self.get_latest(self._cmd_topic)
             if cmd is not None:
-                self._robot.command_joint_pos(np.asarray(cmd["joint_pos"]))
+                # Use np.array() to ensure a writable copy (np.asarray may return read-only view)
+                joint_pos = np.array(cmd["joint_pos"], dtype=np.float64)
+                # Debug: log gripper command every 100 steps
+                if not hasattr(self, '_step_count'):
+                    self._step_count = 0
+                self._step_count += 1
+                if self._step_count % 100 == 0 and len(joint_pos) > 6:
+                    print(f"[{self.name}] RobotNode commanding gripper: {joint_pos[6]:.3f} (full pos: {joint_pos})")
+                self._robot.command_joint_pos(joint_pos)
 
         self.publish("joint_state", self._robot.get_observations(), ts=ts)
 
