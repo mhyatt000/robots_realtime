@@ -22,7 +22,7 @@ To build your own YAM active leader arms refer to: [lerobot_teleoperator_yamacti
 
 [Extending (new agents, robots, cameras)](docs/extending.md) 
 
-[VR streaming to Quest](docs/vr_streaming.md)
+[VR streaming MuJoCo sim to Quest](docs/vr_streaming.md)
 
 
 ---
