@@ -66,7 +66,6 @@ panda_python = { path = "dependencies/panda_py_0.7.5_libfranka_0.10.0/panda_pyth
 pyzed = { path = "dependencies/pyzed-5.1-cp311-cp311-linux_x86_64.whl" }
 i2rt = { path = "dependencies/i2rt", editable = true }
 lerobot_teleoperator_yamactiveleader = { path = "dependencies/lerobot_teleoperator_yamactiveleader", editable = true }
-mjlab = { path = "dependencies/mjlab", editable = true }
 
 [tool.uv]
 override-dependencies = [
