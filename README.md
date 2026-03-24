@@ -112,8 +112,10 @@ Opens a Viser viewer at `http://localhost:8080`. Two modes: **qpos** (exact, res
 
 # Citation
 If you find this useful consider citing:
+```
 @misc{robots_realtime2026,
   title  = {{robots_realtime}: A Modular Software Stack for Hardware Interfacing, Tele-Operation, Data-Collection, Policy Learning, and DAgger on Robot Arms},
   author = {Yu, Justin},
   year   = {2026},
 }
+```
