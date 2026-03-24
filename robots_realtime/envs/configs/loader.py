@@ -8,7 +8,6 @@ import cloudpickle
 import yaml
 from omegaconf import DictConfig, ListConfig, OmegaConf
 
-# from omegaconf import SCMode
 from robots_realtime.envs.configs.instantiate import _convert_target_to_string
 
 

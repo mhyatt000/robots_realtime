@@ -90,19 +90,13 @@ class OpencvCamera(CameraDriver):
 if __name__ == "__main__":
     import argparse
 
-    from yam_realtime.camera.camera_utils import plot_camera_read
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--device_path", type=str, default="/dev/video-zed2i")
-    parser.add_argument("--show_video", action="store_true")
     args = parser.parse_args()
 
     camera = OpencvCamera(device_path=args.device_path)
 
-    if args.show_video:
-        plot_camera_read(camera)
-    else:
-        while True:
-            data = camera.read()
-            print(data)
+    while True:
+        data = camera.read()
+        print(data)
             time.sleep(1 / camera.fps)

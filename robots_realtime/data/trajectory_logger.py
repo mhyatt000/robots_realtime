@@ -114,37 +114,6 @@ class _NumericStream:
         self._bin_path.unlink(missing_ok=True)
 
 
-# class _VideoStream:
-#     """Streams uint8 RGB frames to an MP4 via cv2.VideoWriter."""
-
-#     def __init__(self, path: Path, fps: float, h: int, w: int) -> None:
-#         import cv2
-#         # Prefer H.264 (avc1) for broad platform compatibility; fall back to mp4v.
-#         # Codec probing is done with C-level stderr suppressed because OpenCV
-#         # prints FFMPEG errors even for expected probe failures.
-#         self._writer = None
-#         for fourcc_str in ("avc1", "mp4v"):
-#             fourcc = cv2.VideoWriter_fourcc(*fourcc_str)
-#             with _silence_c_stderr():
-#                 writer = cv2.VideoWriter(str(path), fourcc, fps, (w, h))
-#             if writer.isOpened():
-#                 self._writer = writer
-#                 break
-#         if self._writer is None:
-#             raise RuntimeError(
-#                 f"cv2.VideoWriter could not open {path} with avc1 or mp4v "
-#                 f"(fps={fps}, size={w}x{h}). "
-#                 "Check that opencv-python is built with video support and the path is writable."
-#             )
-
-#     def write(self, frame: np.ndarray) -> None:
-#         import cv2
-#         self._writer.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-
-#     def close(self) -> None:
-#         self._writer.release()
-
-
 class _VideoStream:
     """Streams uint8 RGB frames using imageio-ffmpeg for better UI compatibility."""
 

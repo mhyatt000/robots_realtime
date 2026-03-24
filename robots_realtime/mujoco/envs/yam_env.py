@@ -485,10 +485,6 @@ def main(args: Args) -> None:
             state = trajectory["state"]
             env.reset()
             env.load_state(state[0])
-        # if args.policy == "single_gello":
-        #     from robots_realtime.agents.gello_agent import RainbowGelloAgent
-        #     from robots_realtime.robots.generic_robot import GenericRobot, GenericRobotConfig
-
         config = GenericRobotConfig(
             driver_type="dynamixel",
             port="/dev/ttyUSB0",
@@ -623,8 +619,6 @@ def main(args: Args) -> None:
                         top_images.append(t.observation["top_camera"]["images"]["rgb"])
 
                         time_until_next_step = env.control_dt - (time.time() - step_start)
-                        # if time_until_next_step > 0:
-                        #     time.sleep(time_until_next_step)
             except KeyboardInterrupt:
                 pass
             finally:
