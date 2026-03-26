@@ -9,7 +9,7 @@ A research codebase for real-time robot teleoperation, data collection, and poli
 
 <table>
 <tr>
-<td><img src="media/yam_realtime.gif" width="360"></td>
+<td><img src="media/real_yams_rr.gif" width="360"></td>
 <td><img src="media/franka_realtime2.gif" width="360"></td>
 </tr>
 <tr>
