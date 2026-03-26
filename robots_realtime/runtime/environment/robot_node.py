@@ -75,10 +75,15 @@ class RobotNode(Node):
         name: str = "robot",
         cmd_topic: str | None = None,
         robot_config: str | None = None,
+        poll_freq: float | None = None,
         writer=None,
         **kwargs,
     ) -> None:
         self.subscribed_topics = [cmd_topic] if cmd_topic else []
+        # Explicitly set poll_freq and subscriber_driven before calling super().__init__
+        if poll_freq is not None:
+            self.poll_freq = poll_freq
+            self.subscriber_driven = False  # switch to fixed_rate mode
         super().__init__(name=name, writer=writer, **kwargs)
         self._robot = robot
         self._cmd_topic = cmd_topic
@@ -100,13 +105,19 @@ class RobotNode(Node):
             if cmd is not None:
                 # Use np.array() to ensure a writable copy (np.asarray may return read-only view)
                 joint_pos = np.array(cmd["joint_pos"], dtype=np.float64)
-                # Debug: log gripper command every 100 steps
+                # Debug: log commands every 100 steps
                 if not hasattr(self, '_step_count'):
                     self._step_count = 0
                 self._step_count += 1
-                if self._step_count % 100 == 0 and len(joint_pos) > 6:
-                    print(f"[{self.name}] RobotNode commanding gripper: {joint_pos[6]:.3f} (full pos: {joint_pos})")
+                if self._step_count % 100 == 0:
+                    print(f"[{self.name}] RobotNode step {self._step_count}: received cmd, calling command_joint_pos with {joint_pos}")
                 self._robot.command_joint_pos(joint_pos)
+            else:
+                if not hasattr(self, '_no_cmd_count'):
+                    self._no_cmd_count = 0
+                self._no_cmd_count += 1
+                if self._no_cmd_count % 100 == 0:
+                    print(f"[{self.name}] RobotNode: NO COMMAND received from {self._cmd_topic} (count: {self._no_cmd_count})")
 
         self.publish("joint_state", self._robot.get_observations(), ts=ts)
 
@@ -116,8 +127,12 @@ class RobotNode(Node):
 
     @classmethod
     def build_kwargs(cls, params: dict) -> dict:
-        return {
+        kwargs = {
             "name": params["name"],
             "cmd_topic": params.get("cmd_topic"),
             "robot_config": params.get("robot_config"),
         }
+        # Pass through poll_freq if specified
+        if "poll_freq" in params:
+            kwargs["poll_freq"] = params["poll_freq"]
+        return kwargs

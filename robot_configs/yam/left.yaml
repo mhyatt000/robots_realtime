@@ -1,4 +1,4 @@
-_target_: i2rt.robots.motor_chain_robot.MotorChainRobot
+_target_: robots_realtime.robots.safe_motor_chain_robot.SafeMotorChainRobot
 motor_chain:
   _target_: i2rt.motor_drivers.dm_driver.DMChainCanInterface
   motor_list:

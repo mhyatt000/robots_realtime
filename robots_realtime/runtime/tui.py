@@ -132,8 +132,8 @@ def _render(session, n_log_lines: int = 8) -> Panel:
     log_dir = getattr(session, "log_dir", None)
     if log_dir is not None:
         content.add_row(Rule(style="dim"))
-        content.add_row(_log_text(log_dir, n_lines=n_log_lines))
         content.add_row(Text(f"  logs: {log_dir}", style="dim"))
+        content.add_row(_log_text(log_dir, n_lines=n_log_lines))
 
     return Panel(content, title="[bold]robots_realtime[/bold]", border_style="dim")
 

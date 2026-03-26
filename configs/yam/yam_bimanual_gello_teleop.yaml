@@ -9,8 +9,10 @@ nodes:
     name: gello_left
     agent_class: robots_realtime.agents.teleoperation.gello_leader_agent:GelloLeaderAgent
     agent_kwargs:
-      port: /dev/ttyUSB0
+      port: /dev/ttyACM0
       robot_name: left
+      include_gripper: true
+      joint_signs: [-1, -1, -1, -1, -1, -1]
     arm_key: left
     loop_mode: flat_out
 
@@ -18,8 +20,10 @@ nodes:
     name: gello_right
     agent_class: robots_realtime.agents.teleoperation.gello_leader_agent:GelloLeaderAgent
     agent_kwargs:
-      port: /dev/ttyUSB1
+      port: /dev/ttyACM1
       robot_name: right
+      include_gripper: true
+      joint_signs: [-1, -1, -1, -1, -1, -1]
     arm_key: right
     loop_mode: flat_out
 
@@ -27,11 +31,13 @@ nodes:
     name: yam_left
     robot_config: robot_configs/yam/left.yaml
     cmd_topic: gello_left/joint_pos
+    poll_freq: 200
 
   - type: RobotNode
     name: yam_right
     robot_config: robot_configs/yam/right.yaml
     cmd_topic: gello_right/joint_pos
+    poll_freq: 200
 
   - type: CameraNode
     name: camera_top
