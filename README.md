@@ -3,9 +3,9 @@
 A research codebase for real-time robot teleoperation, data collection, and policy deployment.
 
 ### Why robots_realtime?
-- **Unified Pipeline:** Collect data in MuJoCo sim or on real hardware platforms, and deploy learned policies with the same infrastructure.
+- **Unified Pipeline:** Collect data in simulation or on real hardware platforms, and deploy learned policies with the same infrastructure.
 - **Modular Stack:** Switch between GELLO leader arms, IK gizmos, Franka or I2RT YAM robot hardware via runtime YAML configs.
-- **High Frequency:** Built on ZeroMQ nodes for asynchronous, low-latency real-time control for reactive policies.
+- **High Frequency:** Built with ZeroMQ nodes for asynchronous, low-latency real-time control.
 
 <table>
 <tr>
@@ -27,7 +27,6 @@ To build your own YAM active leader arms refer to: [lerobot_teleoperator_yamacti
 
 [VR streaming MuJoCo sim to Quest](docs/vr_streaming.md)
 
-
 ---
 
 ## Installation
@@ -35,14 +34,13 @@ To build your own YAM active leader arms refer to: [lerobot_teleoperator_yamacti
 ```bash
 git clone --recurse-submodules https://github.com/uynitsuj/robots_realtime.git
 cd robots_realtime
-
 # if already cloned, or some of the submodules are incompletely cloned, run
 git submodule update --init --recursive
 uv venv --python 3.11 && uv pip install -e .
 ```
 
 ---
-## Configuration
+## I2RT YAM Configuration
 If using YAM arms, configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 
 ## Usage / Quickstart
@@ -72,7 +70,7 @@ Then you should see the terminal populate with a rich TUI session:
 │   logs: /tmp/rr_logs_7hhz62am                                                  │
 ╰────────────────────────────────────────────────────────────────────────────────╯
 ```
-Look under configs for other existing configs
+Look under `/configs` for other existing configs
 
 ### Replay an episode
 
@@ -82,16 +80,6 @@ uv run rr-replay recordings/20260323/episode_175805_0473b1bc/
 
 Opens a Viser viewer at `http://localhost:8080`. Two modes: **qpos** (exact, restores recorded state) and **physics** (re-simulates from actions).
 
-> Commands run against the project venv via `uv run`. Alternatively: `source .venv/bin/activate` and drop the prefix.
-
 # TODOS / Roadmap
 * [ ] Test + verify policy deploy pipeline
 * [ ] DAgger on-policy intervention data collection
-
-# Citation
-If you find this useful consider citing:
-@misc{robots_realtime2026,
-  title  = {{robots_realtime}: A Modular Software Stack for Hardware Interfacing, Tele-Operation, Data-Collection, Policy Learning, and DAgger on Robot Arms},
-  author = {Yu, Justin},
-  year   = {2026},
-}

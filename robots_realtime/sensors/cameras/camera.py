@@ -5,8 +5,6 @@ from typing import Any, Dict, List, Optional, Protocol, Tuple
 
 import numpy as np
 
-from robots_realtime.utils.portal_utils import remote
-
 
 @dataclass
 class IMUData:
@@ -99,7 +97,6 @@ class CameraNode:
                 self.exception = e
                 print(f"Error polling server: {e}")
 
-    @remote()
     def read(self) -> Dict[str, Any]:
         if self.exception is not None:
             raise self.exception
@@ -135,11 +132,9 @@ class CameraNode:
             result["extrinsics"] = extrinsics
         return result
 
-    @remote(serialization_needed=True)
     def get_camera_info(self) -> Dict[str, Any]:
         return self.camera.get_camera_info()
 
-    @remote()
     def close(self) -> None:
         self.stop_event.set()
         self.camera.stop()

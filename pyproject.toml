@@ -41,8 +41,8 @@ dependencies = [
 ]
 
 [project.scripts]
-rr-session = "robots_realtime.__main__:main"
-rr-replay  = "robots_realtime.cli.replay:main"
+rr-session = "robots_realtime.rr_session_cli:main"
+rr-replay  = "robots_realtime.rr_replay_cli:main"
 
 [project.optional-dependencies]
 sensors = [

@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, Protocol
 
 from robots_realtime.agents.constants import ActionSpec
-from robots_realtime.utils.portal_utils import remote
 
 
 class Agent(Protocol):
@@ -19,7 +18,6 @@ class Agent(Protocol):
         """
         raise NotImplementedError
 
-    @remote()
     def action_spec(self) -> ActionSpec:
         """Check if the agent is compatible with the environment.
 
@@ -44,7 +42,6 @@ class PolicyAgent(Agent):
         """
         raise NotImplementedError
 
-    @remote()
     def action_spec(self) -> ActionSpec:
         """Check if the agent is compatible with the environment.
 

@@ -9,7 +9,6 @@ from robots_realtime.data.data_utils import recusive_flatten, reverse_flatten
 
 from robots_realtime.agents.agent import PolicyAgent
 from robots_realtime.agents.constants import ActionSpec
-from robots_realtime.utils.portal_utils import remote
 
 
 class AsyncDiffusionAgent(PolicyAgent):
@@ -27,7 +26,6 @@ class AsyncDiffusionAgent(PolicyAgent):
     def obs_to_model_input(self):
         raise NotImplementedError
 
-    @remote()
     def act(self, obs):
         action = reverse_flatten(self(obs))["action"]
 
@@ -36,7 +34,6 @@ class AsyncDiffusionAgent(PolicyAgent):
             "right": {"pos": action["right"]["pos"]},
         }
 
-    @remote(serialization_needed=True)
     def action_spec(self) -> ActionSpec:
         """Define the action specification."""
         if self.use_joint_state_as_action:

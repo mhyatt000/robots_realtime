@@ -11,7 +11,6 @@ from dm_env.specs import Array
 from robots_realtime.agents.agent import Agent
 from robots_realtime.robots.inverse_kinematics.yam_pyroki import YamPyroki
 from robots_realtime.sensors.cameras.camera_utils import obs_get_rgb, resize_with_pad
-from robots_realtime.utils.portal_utils import remote
 
 
 class YamPyrokiViserAgent(Agent):
@@ -101,7 +100,6 @@ class YamPyrokiViserAgent(Agent):
 
         return action
 
-    @remote(serialization_needed=True)
     def action_spec(self) -> Dict[str, Dict[str, Array]]:
         """Define the action specification."""
         action_spec = {
