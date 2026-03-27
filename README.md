@@ -40,12 +40,25 @@ uv venv --python 3.11 && uv pip install -e .
 ```
 
 ---
-## I2RT YAM Configuration
-If using YAM arms, configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 
 ## Usage / Quickstart
+### I2RT YAM Configuration
+If using real-world I2RT YAM arms, configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 
-### Run a teleop data collection session in sim using [3d printed leader arms](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
+### Run a teleop session with YAM Followers and YAM as Leaders
+#### Session Configuration
+```bash
+uv run rr-session configs/yam/yam_bimanual_yam_leader.yaml
+```
+
+### Run a teleop session with YAM Followers and custom [3d printed active leaders](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
+#### I2RT YAM Configuration
+Configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
+```bash
+uv run rr-session configs/yam/yam_bimanual_gello_teleop.yaml
+```
+
+### Run a teleop session in sim using [3d printed leaders](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
 
 ```bash
 uv run rr-session configs/yam/yam_sim_gello_teleop.yaml
