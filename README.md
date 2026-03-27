@@ -63,7 +63,7 @@ uv run rr-session configs/yam/yam_bimanual_gello_teleop.yaml
 ```bash
 uv run rr-session configs/yam/yam_sim_gello_teleop.yaml
 ```
-Then you should see the terminal populate with a rich TUI session:
+Upon running any of the above configs, you should see the terminal populate with a rich TUI session:
 ```
 ╭─────────────────────────────── robots_realtime ────────────────────────────────╮
 │   NODE                STATUS             HZ    TOPICS                          │
