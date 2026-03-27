@@ -45,7 +45,7 @@ uv venv --python 3.11 && uv pip install -e .
 ### I2RT YAM Configuration
 If using real-world I2RT YAM arms, configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 
-### Run a teleop session with YAM Followers and YAM as Leaders
+### Run a teleop session with YAM Followers and YAM Leaders
 #### Session Configuration
 ```bash
 uv run rr-session configs/yam/yam_bimanual_yam_leader.yaml
