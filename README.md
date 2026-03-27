@@ -52,8 +52,6 @@ uv run rr-session configs/yam/yam_bimanual_yam_leader.yaml
 ```
 
 ### Run a teleop session with YAM Followers and custom [3d printed active leaders](https://github.com/uynitsuj/lerobot_teleoperator_yamactiveleader)
-#### I2RT YAM Configuration
-Configure YAM arms CAN chain according to instructions from the [I2RT repo](https://github.com/i2rt-robotics/i2rt)
 ```bash
 uv run rr-session configs/yam/yam_bimanual_gello_teleop.yaml
 ```
