@@ -2147,6 +2147,22 @@ wheels = [
 ]
 
 [[package]]
+name = "openpi-client"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dm-tree" },
+    { name = "msgpack" },
+    { name = "numpy" },
+    { name = "pillow" },
+    { name = "websockets" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3e/73/b6535d38f04bf49a851723eb95e0ab9c6e77179a0de6c06d6d3bd5ee08be/openpi_client-0.1.2.tar.gz", hash = "sha256:2b4a64ab1f1e2d5a54ff1130314abca4f537f2568909ea0b8ec3dd4c7cd6b751", size = 11695, upload-time = "2026-03-30T17:14:06.127Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/95/55/84ddc2c41a8178f63f8b668cf90497601bcd354128813aad63db96571c45/openpi_client-0.1.2-py3-none-any.whl", hash = "sha256:b8aa6d2ea7172d3b7c1fcf867d43930052b5ff19ea7b777966781105aa989897", size = 13952, upload-time = "2026-03-30T17:14:04.959Z" },
+]
+
+[[package]]
 name = "opt-einsum"
 version = "3.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2677,6 +2693,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pyrealsense2"
+version = "2.57.7.10387"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4f/61/1d4db107c791c89b3b231d2050ff3667b6a72979bd5dfb7a9b2a2fa2dcb2/pyrealsense2-2.57.7.10387-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:3f95183e07b964c86794e508ec82c82700ae597acbf0751083f7a387a490eb1c", size = 11616809, upload-time = "2026-03-25T11:36:52.472Z" },
+    { url = "https://files.pythonhosted.org/packages/15/c8/a7a8eec5a20829d7f05727e238e3423ffe15aeda69bf0c639742a7f3dad0/pyrealsense2-2.57.7.10387-cp311-cp311-win_amd64.whl", hash = "sha256:7f72715ea8bb30c218c5cfc40c69c7b1cc079ac267f472c98166502a193af254", size = 8125024, upload-time = "2026-03-25T11:37:11.982Z" },
+]
+
+[[package]]
 name = "pyroki"
 version = "0.0.0"
 source = { git = "https://github.com/chungmin99/pyroki.git?rev=59aa21f#59aa21ffc766533c66d22ff38dd6717e176f19c8" }
@@ -2996,6 +3021,7 @@ dependencies = [
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "opencv-python" },
+    { name = "openpi-client" },
     { name = "portal" },
     { name = "protobuf" },
     { name = "pyroki" },
@@ -3016,6 +3042,9 @@ franka-panda = [
 ]
 mjlab-sim = [
     { name = "mjlab" },
+]
+realsense = [
+    { name = "pyrealsense2" },
 ]
 sensors = [
     { name = "pyzed" },
@@ -3051,9 +3080,11 @@ requires-dist = [
     { name = "numpy" },
     { name = "omegaconf" },
     { name = "opencv-python" },
+    { name = "openpi-client", specifier = "==0.1.2" },
     { name = "panda-python", marker = "extra == 'franka-panda'", path = "dependencies/panda_py_0.7.5_libfranka_0.10.0/panda_python-0.7.5+libfranka.0.10.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
     { name = "portal" },
     { name = "protobuf", specifier = ">=6.33.1" },
+    { name = "pyrealsense2", marker = "extra == 'realsense'", specifier = ">=2.55" },
     { name = "pyroki", git = "https://github.com/chungmin99/pyroki.git?rev=59aa21f" },
     { name = "python-can", specifier = ">=4.3.0" },
     { name = "pyzed", marker = "extra == 'sensors'", path = "dependencies/pyzed-5.1-cp311-cp311-linux_x86_64.whl" },
@@ -3066,7 +3097,7 @@ requires-dist = [
     { name = "xdof-sdk" },
     { name = "yourdfpy" },
 ]
-provides-extras = ["sensors", "franka-panda", "mjlab-sim", "sim"]
+provides-extras = ["sensors", "realsense", "franka-panda", "mjlab-sim", "sim"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ruff", specifier = ">=0.12.3" }]

@@ -38,6 +38,7 @@ _NODE_REGISTRY: dict[str, str] = {
     "CameraNode":       "robots_realtime.runtime.environment.camera_node:CameraNode",
     "XdofSimNode":      "robots_realtime.runtime.sim.xdof_sim_node:XdofSimNode",
     "ViserTeleopNode":  "robots_realtime.runtime.viser_teleop_node:ViserTeleopNode",
+    "ViserMonitorNode": "robots_realtime.runtime.viser_monitor_node:ViserMonitorNode",
 }
 
 
@@ -122,6 +123,8 @@ def _load_from_yaml(yaml_path: Path) -> "Session":
     save_root: str = session_cfg.get("save_root", "recordings")
     auto_record_duration: float | None = session_cfg.get("auto_record_duration")
     record_topic: str | None = session_cfg.get("record_topic")
+    start_paused: bool = bool(session_cfg.get("start_paused", False))
+    record_on_unpause: bool = bool(session_cfg.get("record_on_unpause", False))
 
     nodes_cfg: list[dict] = cfg.get("nodes", [])
     nodes = []
@@ -155,4 +158,6 @@ def _load_from_yaml(yaml_path: Path) -> "Session":
         save_root=save_root,
         record_topic=record_topic,
         auto_record_duration=auto_record_duration,
+        start_paused=start_paused,
+        record_on_unpause=record_on_unpause,
     )
