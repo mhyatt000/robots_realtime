@@ -356,26 +356,27 @@ class AsyncMp4Writer(Writer):
     def write(self, topic: str, timestamp: float, data: dict) -> None:
         if not self._open:
             return
-        # CameraNode publishes ``{"images": {topic: frame}, "timestamp": ts, ...}``
-        # so the frame lives under data["images"][topic]. Fall back to a flat
-        # ``data["frame"]`` for callers that pre-unwrap, and to data[topic]
-        # for any other shapes someone might wire up in the future.
-        # NB: ndarrays raise on bool() truthiness checks, so use explicit
-        # ``is None`` chains rather than ``a or b`` short-circuit.
-        frame = None
-        images = data.get("images")
-        if isinstance(images, dict):
-            frame = images.get(topic)
-            if frame is None:
-                frame = images.get("rgb")
-        if frame is None:
-            frame = data.get("frame")
-        if frame is None:
-            cand = data.get(topic)
-            if cand is not None and hasattr(cand, "ndim"):
-                frame = cand
-        if frame is None:
+        # Two supported payload shapes:
+        #   sim contract:    {"frame": ndarray}
+        #   CameraNode bus:  {"images": {sub: ndarray, ...}, ...}
+        frame = data.get("frame")
+        if frame is not None:
+            self._enqueue(topic, frame, timestamp)
             return
+        images = data.get("images")
+        if isinstance(images, dict) and images:
+            if len(images) == 1:
+                self._enqueue(topic, next(iter(images.values())), timestamp)
+            else:
+                for sub, sub_frame in images.items():
+                    self._enqueue(f"{topic}-{sub}", sub_frame, timestamp)
+            return
+        # Fallback: bare ndarray keyed by topic name.
+        cand = data.get(topic)
+        if cand is not None and hasattr(cand, "ndim"):
+            self._enqueue(topic, cand, timestamp)
+
+    def _enqueue(self, topic: str, frame, timestamp: float) -> None:
         self._ensure_topic(topic)
         self._queues[topic].put((frame, timestamp))
 
