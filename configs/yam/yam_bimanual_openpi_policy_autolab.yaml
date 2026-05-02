@@ -19,7 +19,7 @@ session:
   #   - record_on_unpause: when the operator unpauses, automatically start an
   #     episode so every rollout is captured from the instant of handoff.
   start_paused: true
-  record_on_unpause: false
+  record_on_unpause: true
 
 nodes:
   - type: AgentNode
