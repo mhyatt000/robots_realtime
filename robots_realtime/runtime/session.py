@@ -85,6 +85,8 @@ class Session:
                               (e.g. "gello_left/record").
         auto_record_duration: If set, automatically start recording on
                               session start and stop after this many seconds.
+        episode_timeout:      If set, automatically stop recording and pause
+                              after this many seconds from episode start.
         pub_port:             MessageBus XSUB port.
         sub_port:             MessageBus XPUB port.
     """
@@ -98,6 +100,7 @@ class Session:
         auto_record_duration: float | None = None,
         start_paused: bool = False,
         record_on_unpause: bool = False,
+        episode_timeout: float | None = None,
         pub_port: int = 5555,
         sub_port: int = DEFAULT_SUB_PORT,
     ) -> None:
@@ -115,6 +118,8 @@ class Session:
         # you want every rollout captured from the instant the policy takes over.
         self._start_paused = bool(start_paused)
         self._record_on_unpause = bool(record_on_unpause)
+        self._episode_timeout = episode_timeout
+        self._episode_timeout_timer: threading.Timer | None = None
         self._is_paused: bool = False
         self._session_start_time = time.time()
 
@@ -248,7 +253,22 @@ class Session:
             except Exception:
                 pass
 
+        if self._episode_timeout is not None:
+            self._episode_timeout_timer = threading.Timer(
+                self._episode_timeout, self._on_episode_timeout
+            )
+            self._episode_timeout_timer.daemon = True
+            self._episode_timeout_timer.start()
+
+    def _on_episode_timeout(self) -> None:
+        self.end_episode(save=True)
+        self.pause()
+
     def end_episode(self, save: bool = True) -> Path | None:
+        if self._episode_timeout_timer is not None:
+            self._episode_timeout_timer.cancel()
+            self._episode_timeout_timer = None
+
         with self._recording_lock:
             if not self._is_recording:
                 return None

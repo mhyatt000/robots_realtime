@@ -84,6 +84,11 @@ def _recording_line(session) -> Text:
     t = Text()
     t.append("● ", style="bold red")
     t.append(clock, style="bold white")
+    timeout = getattr(session, "_episode_timeout", None)
+    if timeout is not None:
+        remaining = max(0, int(timeout - elapsed))
+        rm, rs = divmod(remaining, 60)
+        t.append(f"  ({rm:02d}:{rs:02d} left)", style="yellow")
     t.append(f"  {session.save_root}", style="dim")
     return t
 

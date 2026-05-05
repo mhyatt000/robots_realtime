@@ -125,6 +125,7 @@ def _load_from_yaml(yaml_path: Path) -> "Session":
     record_topic: str | None = session_cfg.get("record_topic")
     start_paused: bool = bool(session_cfg.get("start_paused", False))
     record_on_unpause: bool = bool(session_cfg.get("record_on_unpause", False))
+    episode_timeout: float | None = session_cfg.get("episode_timeout")
 
     nodes_cfg: list[dict] = cfg.get("nodes", [])
     nodes = []
@@ -160,4 +161,5 @@ def _load_from_yaml(yaml_path: Path) -> "Session":
         auto_record_duration=auto_record_duration,
         start_paused=start_paused,
         record_on_unpause=record_on_unpause,
+        episode_timeout=episode_timeout,
     )

@@ -11,7 +11,7 @@ version: "1"
 #   - can_left / can_right interfaces up at 1 Mbit/s.
 
 session:
-  save_root: recordings
+  save_root: recordings/pi0_merged_d405_no_rabc_20260501/from_crumpled
   # Policy-specific safety + ergonomics:
   #   - start_paused: RobotNode commands are gated on startup so the arm doesn't
   #     snap to wherever the policy thinks it should be. Hit [space] in the TUI
@@ -20,6 +20,7 @@ session:
   #     episode so every rollout is captured from the instant of handoff.
   start_paused: true
   record_on_unpause: true
+  episode_timeout: 240
 
 nodes:
   - type: AgentNode
@@ -65,12 +66,12 @@ nodes:
       ip: 127.0.0.1
       port: 8012
       action_horizon: 30
-      inference_mode: async_rtc                 # sync | async | async_rate_limited | async_rtc | temporal_ensemble
+      inference_mode: sync                 # sync | async | async_rate_limited | async_rtc | temporal_ensemble
       # inference_interval_s: 0.7                 # rate cap in seconds (None = flat-out async)
       # min_smoothed_actions: 1                 # only meaningful for async / async_rate_limited
       # max_smoothed_actions: 10                # (ignored in sync and effectively unused in async_rtc)
       # temporal_ensemble_k: 0.05               # ACT paper default; higher = more weight on older predictions (smoother, laggier)
-      rtc_execution_horizon: 22               # async_rtc only; None → server's action_horizon
+      rtc_execution_horizon: 26               # async_rtc only; None → server's action_horizon
       rtc_consumer_rate_hz: 30                  # async_rtc only; converts latency → inference_delay ticks
       # Upper clamp on RTC guidance weight (server side). With the prefix now
       # normalized into model-space by Policy._rtc_action_normalizer, a
@@ -78,7 +79,7 @@ nodes:
       # the base v_t while still tracking the prefix. If the arm is still
       # jerky, drop to 0.5. If the [rtc] log shows |corr| << |v_t| and
       # chunk-boundary jitter persists, raise to 3–5.
-      rtc_max_guidance_weight: 4.0
+      rtc_max_guidance_weight: 3.0
       # rtc_debug controls the CLIENT-side chunk-jump log. Server-side per-
       # denoising-step stats are controlled independently by the RTC_DEBUG
       # env var on the server process (those prints add real latency via
