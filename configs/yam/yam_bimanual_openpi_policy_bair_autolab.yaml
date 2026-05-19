@@ -11,7 +11,7 @@ version: "1"
 #   - can_left / can_right interfaces up at 1 Mbit/s.
 
 session:
-  save_root: recordings/pi0_merged_d405short25rm_bs1024_rabc_20260501/from_crumpled
+  save_root: recordings/{policy_name}
   # Policy-specific safety + ergonomics:
   #   - start_paused: RobotNode commands are gated on startup so the arm doesn't
   #     snap to wherever the policy thinks it should be. Hit [space] in the TUI
@@ -19,8 +19,8 @@ session:
   #   - record_on_unpause: when the operator unpauses, automatically start an
   #     episode so every rollout is captured from the instant of handoff.
   start_paused: true
-  # record_on_unpause: false
-  # episode_timeout: 240
+  record_on_unpause: true
+  episode_timeout: 240
 
 nodes:
   - type: AgentNode
@@ -94,7 +94,7 @@ nodes:
       # checkpoint. Lab42 / PI OpenPI YAM runs use center-crop (crop to a
       # min(H,W) square from centre, then resize). resize_with_pad adds
       # black bars which are OOD for the model → erratic actions.
-      image_preprocess: center_crop             # center_crop | pad
+      image_preprocess: center_crop #center_crop             # center_crop | pad
       use_joint_state_as_action: false
     state_topics:
       left:  yam_left/joint_state       # flatten → left-joint_pos, left-gripper_pos
@@ -114,7 +114,7 @@ nodes:
     poll_freq: 200
     ramp_duration_s: 1.5
     # startup_joint_pos: [-0.0235, 1.36242, 0.3495, 0.95763, -0.11537, -0.02913, 1.0]
-    startup_joint_pos: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 1.0]
+    startup_joint_pos: [0.0, 0.0, 0.0, 0.4, 0.0, 0.0, 1.0]
     startup_duration_s: 2.0
 
   - type: RobotNode
@@ -124,7 +124,7 @@ nodes:
     poll_freq: 200
     ramp_duration_s: 1.5
     # startup_joint_pos: [0.01732, 1.34234, 0.33567, 0.98454, 0.11514, 0.03717, 1.0]
-    startup_joint_pos: [0.0, 0.0, 0.0, 0.3, 0.0, 0.0, 1.0]
+    startup_joint_pos: [0.0, 0.0, 0.0, 0.4, 0.0, 0.0, 1.0]
     startup_duration_s: 2.0
 
   # Three Intel RealSense D405s — same station as the teleop config.

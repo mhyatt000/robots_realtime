@@ -194,6 +194,31 @@ def _draw_label(frame: np.ndarray, text: str) -> np.ndarray:
     return np.asarray(img)
 
 
+def _draw_duration(frame: np.ndarray, text: str) -> np.ndarray:
+    from PIL import Image, ImageDraw, ImageFont
+
+    img = Image.fromarray(frame)
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", 20)
+    except (IOError, OSError):
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 20)
+        except (IOError, OSError):
+            font = ImageFont.load_default()
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+    x = (frame.shape[1] - tw) // 2
+    y = (frame.shape[0] - th) // 2
+    pad = 6
+    draw.rectangle(
+        [x - pad, y - pad, x + tw + pad, y + th + pad],
+        fill=(0, 0, 0, 180),
+    )
+    draw.text((x, y), text, fill=(255, 255, 255), font=font)
+    return np.asarray(img)
+
+
 def build_grid(
     day_dir: Path,
     output: Path,
@@ -260,9 +285,13 @@ def build_grid(
             for idx, ep in enumerate(episodes):
                 ep_t = min(t, ep.duration)
                 cell = ep.get_composite_frame(ep_t)
+                finished = t >= ep.duration
                 if label:
                     short_name = ep.name.replace("episode_", "ep_")
                     cell = _draw_label(cell, short_name)
+                if finished:
+                    mins, secs = divmod(ep.duration, 60)
+                    cell = _draw_duration(cell, f"{int(mins)}:{secs:05.2f}")
 
                 row, col = divmod(idx, cols)
                 y0 = row * cell_height

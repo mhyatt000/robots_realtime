@@ -25,6 +25,7 @@ exports a make_session() function — for backward compatibility.
 from __future__ import annotations
 
 import importlib
+import logging
 import os
 from pathlib import Path
 from typing import Any
@@ -106,6 +107,35 @@ def load_session(path: str) -> "Session":
     return _load_from_yaml(yaml_path)
 
 
+def _resolve_policy_name(save_root_template: str, nodes_cfg: list[dict]) -> str:
+    """Replace {policy_name} in save_root by querying the OpenPI server metadata."""
+    for node in nodes_cfg:
+        if node.get("type") != "AgentNode":
+            continue
+        kw = node.get("agent_kwargs", {})
+        ip = kw.get("ip", "127.0.0.1")
+        port = kw.get("port")
+        if port is None:
+            continue
+        try:
+            import websockets.sync.client  # noqa: PLC0415
+            from openpi_client import msgpack_numpy  # noqa: PLC0415
+
+            uri = f"ws://{ip}:{port}"
+            logging.info("Querying policy name from %s ...", uri)
+            with websockets.sync.client.connect(uri, compression=None, max_size=None) as ws:
+                metadata = msgpack_numpy.unpackb(ws.recv())
+            policy_name = metadata.get("policy_name")
+            if policy_name:
+                resolved = save_root_template.format(policy_name=policy_name)
+                logging.info("Resolved save_root to: %s", resolved)
+                return resolved
+            logging.warning("Server at %s has no policy_name in metadata", uri)
+        except Exception as exc:
+            logging.warning("Could not query policy name from %s:%s: %s", ip, port, exc)
+    return save_root_template
+
+
 def _load_from_yaml(yaml_path: Path) -> "Session":
     try:
         import yaml
@@ -128,6 +158,9 @@ def _load_from_yaml(yaml_path: Path) -> "Session":
     episode_timeout: float | None = session_cfg.get("episode_timeout")
 
     nodes_cfg: list[dict] = cfg.get("nodes", [])
+
+    if "{policy_name}" in save_root:
+        save_root = _resolve_policy_name(save_root, nodes_cfg)
     nodes = []
 
     for node_params in nodes_cfg:

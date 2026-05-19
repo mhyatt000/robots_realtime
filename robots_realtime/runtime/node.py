@@ -263,7 +263,10 @@ class Node(ABC):
             self.step()
             self._tick()
             next_t += period
-            remaining = next_t - time.perf_counter()
+            now = time.perf_counter()
+            if next_t < now - period:
+                next_t = now
+            remaining = next_t - now
             if remaining > 3e-4:
                 time.sleep(remaining - 1e-4)
 
