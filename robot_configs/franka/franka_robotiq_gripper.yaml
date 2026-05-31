@@ -4,6 +4,6 @@ robots:
     host_name: "172.16.0.1"
 
   - _target_: robots_realtime.robots.robotiq_gripper.RobotiqGripperRobot 
-    port: "/dev/robotiq"
+    port: "/dev/ttyUSB0"
     default_speed: 255
     default_force: 40

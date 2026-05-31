@@ -9,5 +9,5 @@
 # a new file in this directory, then point the ZedCamera config at it via
 # the `extrinsics_file` field.
 
-position: [1.007, 0.0, 0.29]
+position: [0.99, 0.0, 0.29]
 rpy_radians: [1.0472, 3.14159, -1.5708]
