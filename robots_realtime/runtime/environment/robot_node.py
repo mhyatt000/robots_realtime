@@ -143,6 +143,12 @@ class RobotNode(Node):
             cmd = self.get_latest(self._cmd_topic)
             cmd_ts = self.get_timestamp(self._cmd_topic) if cmd is not None else None
             if cmd is not None:
+                # End-to-end latency from the agent's publish timestamp to this
+                # poll consuming the command. Captures CAN freshness + publish +
+                # serialization + transport + however long this cmd sat in the
+                # subscriber's latest-buffer waiting for the next 200 Hz tick.
+                if cmd_ts is not None:
+                    self._perf.record("cmd_age_ms", (ts - cmd_ts) * 1e3)
                 # Use np.array() to ensure a writable copy (np.asarray may return read-only view)
                 target = np.array(cmd["joint_pos"], dtype=np.float64)
                 is_new = cmd_ts is not None and cmd_ts != self._last_msg_ts
@@ -162,6 +168,7 @@ class RobotNode(Node):
                 if is_new:
                     self._last_msg_ts = cmd_ts
 
+                _t_cmd = time.perf_counter()
                 if self._ramping and self._ramp_seed is not None:
                     alpha = (now - self._ramp_start_time) / self._ramp_duration_s
                     if alpha >= 1.0:
@@ -173,8 +180,12 @@ class RobotNode(Node):
                         self._robot.command_joint_pos(blended)
                 else:
                     self._robot.command_joint_pos(target)
+                self._perf.record("robot_cmd_ms", (time.perf_counter() - _t_cmd) * 1e3)
 
-        self.publish("joint_state", self._robot.get_observations(), ts=ts)
+        _t_obs = time.perf_counter()
+        obs = self._robot.get_observations()
+        self._perf.record("robot_obs_ms", (time.perf_counter() - _t_obs) * 1e3)
+        self.publish("joint_state", obs, ts=ts)
 
     def cleanup(self) -> None:
         if self._shutdown_joint_pos is not None and self._robot is not None:

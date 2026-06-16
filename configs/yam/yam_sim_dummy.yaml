@@ -12,8 +12,8 @@ nodes:
       arm: left
       target_std: 0.3
       pose_interval: 1.0
-    loop_mode: flat_out
-    publish_freq: 200.0
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   - type: AgentNode
     name: gello_right
@@ -22,8 +22,8 @@ nodes:
       arm: right
       target_std: 0.3
       pose_interval: 1.0
-    loop_mode: flat_out
-    publish_freq: 200.0
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   - type: XdofSimNode
     name: yam

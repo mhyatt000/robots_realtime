@@ -24,6 +24,7 @@ from pathlib import Path
 
 import zmq
 
+from robots_realtime.runtime.perf import PerfStats
 from robots_realtime.runtime.transport.message_bus import DEFAULT_PUB_PORT, DEFAULT_SUB_PORT
 from robots_realtime.runtime.transport.publisher import Publisher
 from robots_realtime.runtime.transport.subscriber import Subscriber
@@ -91,6 +92,10 @@ class Node(ABC):
 
         self._publisher: Publisher | None = None
         self._subscriber: Subscriber | None = None
+        # Per-loop perf accumulator. Subclasses call self._perf.record(label, ms)
+        # inside step(); the base loop records loop period + step() duration and
+        # flushes a summary once per interval via _tick().
+        self._perf = PerfStats(self.name)
         self._stop = False
         self._recording: bool = False
         # Session-level gate toggled via `session.toggle_pause()` (space in TUI).
@@ -224,6 +229,7 @@ class Node(ABC):
 
         self._step_count = 0
         self._last_stats_t = time.perf_counter()
+        self._perf.reset()
 
         try:
             if self.subscriber_driven:
@@ -250,17 +256,33 @@ class Node(ABC):
             self._last_stats_t = now
             if self._publisher is not None:
                 self.publish("_step_hz", {"step_hz": self._step_hz})
+        self._perf.maybe_log()
+
+    def _timed_step(self, prev_loop_t: float | None) -> float:
+        """Run step() once, recording loop period and step() duration (ms).
+
+        Returns the perf_counter timestamp taken just before step() so the
+        caller can thread it back in as ``prev_loop_t`` next iteration.
+        """
+        t0 = time.perf_counter()
+        if prev_loop_t is not None:
+            self._perf.record("loop_ms", (t0 - prev_loop_t) * 1e3)
+        self.step()
+        self._perf.record("step_ms", (time.perf_counter() - t0) * 1e3)
+        return t0
 
     def _run_flat_out(self) -> None:
+        prev = None
         while not self._stop:
-            self.step()
+            prev = self._timed_step(prev)
             self._tick()
 
     def _run_fixed_rate(self) -> None:
         period = 1.0 / self.poll_freq  # type: ignore[operator]
         next_t = time.perf_counter()
+        prev = None
         while not self._stop:
-            self.step()
+            prev = self._timed_step(prev)
             self._tick()
             next_t += period
             now = time.perf_counter()
@@ -275,10 +297,11 @@ class Node(ABC):
         assert self._subscriber is not None
         # If poll_freq is also set, use it as the timeout for the blocking poll.
         timeout_ms = int(1000.0 / self.poll_freq) if self.poll_freq else 50
+        prev = None
         while not self._stop:
             self._subscriber.drain_one(timeout_ms=timeout_ms)
             self._subscriber.drain()   # consume any burst that arrived
-            self.step()
+            prev = self._timed_step(prev)
             self._tick()
 
     def stop(self) -> None:

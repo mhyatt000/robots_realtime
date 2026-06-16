@@ -14,7 +14,8 @@ nodes:
       include_gripper: true
       joint_signs: [-1, -1, -1, -1, -1, -1]
     arm_key: left
-    loop_mode: flat_out
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   - type: AgentNode
     name: gello_right
@@ -25,7 +26,8 @@ nodes:
       include_gripper: true
       joint_signs: [-1, -1, -1, -1, -1, -1]
     arm_key: right
-    loop_mode: flat_out
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   - type: RobotNode
     name: yam_left

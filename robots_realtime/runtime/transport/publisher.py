@@ -6,6 +6,7 @@ import time
 
 import zmq
 
+from robots_realtime.runtime.perf import PerfStats
 from robots_realtime.runtime.transport.message_bus import DEFAULT_PUB_PORT
 from robots_realtime.runtime.transport.serialization import pack
 
@@ -45,6 +46,11 @@ class Publisher:
         self._sock.connect(f"tcp://{host}:{port}")
         # Give the slow-joiner a moment to let subscriptions propagate
         time.sleep(0.01)
+
+        # Tracks msgpack-encode + ZMQ-send cost per topic. The per-interval
+        # sample count (n) also reveals the actual bus send rate — useful for
+        # spotting a flat-out node flooding the broker with redundant messages.
+        self._perf = PerfStats(f"{node_name}.pub")
 
     def publish(
         self,
@@ -87,7 +93,11 @@ class Publisher:
 
         topic = f"{self._node_name}/{topic_suffix}"
         envelope = {"ts": ts_val, "src": self._node_name, "data": data}
+        _t_send = time.perf_counter()
         self._sock.send_multipart([topic.encode(), pack(envelope)])
+        if not topic_suffix.startswith("_"):
+            self._perf.record(f"send_ms[{topic_suffix}]", (time.perf_counter() - _t_send) * 1e3)
+            self._perf.maybe_log()
         return True
 
     def close(self) -> None:

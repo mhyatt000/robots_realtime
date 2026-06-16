@@ -19,7 +19,8 @@ nodes:
       start_enabled: true  # Start enabled immediately
     state_topics:
       yam_left: yam_left/joint_state  # Subscribe to follower state for bilateral control
-    loop_mode: flat_out
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   # Right YAM Leader Arm (teaching handle)
   - type: AgentNode
@@ -35,7 +36,8 @@ nodes:
       start_enabled: true  # Start enabled immediately
     state_topics:
       yam_right: yam_right/joint_state  # Subscribe to follower state for bilateral control
-    loop_mode: flat_out
+    loop_mode: fixed_rate
+    poll_freq: 200
 
   # Left YAM Follower Arm
   - type: RobotNode

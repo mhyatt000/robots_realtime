@@ -145,7 +145,9 @@ class AgentNode(Node):
             if data is not None:
                 obs[obs_key] = data
 
+        _t_act = time.perf_counter()
         action = self._agent.act(obs)
+        self._perf.record("act_ms", (time.perf_counter() - _t_act) * 1e3)
         ts = time.time()
 
         if "_record" in action:
