@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = "==3.11.*"
 resolution-markers = [
     "sys_platform == 'linux'",
@@ -11,6 +11,7 @@ resolution-markers = [
 
 [manifest]
 overrides = [
+    { name = "jaxls", git = "https://github.com/brentyi/jaxls.git?rev=5f766d3" },
     { name = "mujoco", specifier = ">=3.5.0" },
     { name = "numpy", specifier = "==1.26.4" },
     { name = "tyro", specifier = ">=1.0.1" },
@@ -1216,7 +1217,7 @@ wheels = [
 [[package]]
 name = "jaxls"
 version = "0.0.0"
-source = { git = "https://github.com/brentyi/jaxls.git#5f766d3b09364a96d83497de2325a835d0e23dc4" }
+source = { git = "https://github.com/brentyi/jaxls.git?rev=5f766d3#5f766d3b09364a96d83497de2325a835d0e23dc4" }
 dependencies = [
     { name = "jax" },
     { name = "jax-dataclasses" },
@@ -3753,12 +3754,17 @@ wheels = [
 
 [[package]]
 name = "warp-lang"
-version = "1.13.0.dev20260225"
+version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/37/3e2127007c18fa8737dc48339e2cc5c97b1052a985a3cde91e326198c1e9/warp_lang-1.13.0.dev20260225.tar.gz", hash = "sha256:a8cff7048d33ad558de68bd9f964e8f80152758e78cbbc2eb79d1887efc1797b", size = 5067, upload-time = "2026-02-25T09:14:11.621Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/83/0f/28ba3c563a87adb85884fb59f5f281446f99a338c907e2b3f0b9f2f4a76c/warp_lang-1.14.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:12656050545cc77bf9b9b155399496c1a6279b5b6c59e407507d6858a2beb4a2", size = 24755239, upload-time = "2026-06-01T15:15:53.395Z" },
+    { url = "https://files.pythonhosted.org/packages/9a/32/784829665b0cc6fadada337f103c811b7bf92a951a69c08f7e3cd6ab2580/warp_lang-1.14.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:70cd127d0e9109417099649fedf9d00f39f1307ccb7a6e9fb87661337868d7de", size = 138666257, upload-time = "2026-06-01T15:15:59.163Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/e1/1f882dfbf4b2528093722423b389984eb65433ac5ebe53f94a1f9a72c262/warp_lang-1.14.0-py3-none-manylinux_2_34_aarch64.whl", hash = "sha256:f482787e8da9c9ef045601fde99095e16d604fbcc3cbb4a1e0cef0769388b316", size = 140159761, upload-time = "2026-06-01T15:16:04.039Z" },
+    { url = "https://files.pythonhosted.org/packages/bc/6a/f530a27d627c19302d40d100ad986b7d1722237866fe178a0c5233a4717e/warp_lang-1.14.0-py3-none-win_amd64.whl", hash = "sha256:936b49ec78237f9760e58cbe9c46ee6f4244aefbd62071c4fa9fd3b313dfa878", size = 121919902, upload-time = "2026-06-01T15:16:05.777Z" },
+]
 
 [[package]]
 name = "wcwidth"

@@ -76,6 +76,9 @@ override-dependencies = [
     # dm_control>=1.0.30 only needs mujoco>=3.3.2, so 3.5.0 is fine for all.
     "mujoco>=3.5.0",
     "tyro>=1.0.1",
+    # pyroki depends on an unpinned jaxls git URL, which conflicts with our
+    # pinned URL above; force the pinned revision across the whole graph.
+    "jaxls @ git+https://github.com/brentyi/jaxls.git@5f766d3",
 ]
 
 [tool.setuptools.packages.find]
