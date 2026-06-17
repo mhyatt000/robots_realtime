@@ -70,7 +70,19 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("--move-duration", type=float, default=2.0, help="Seconds to interpolate to target pose")
     p.add_argument("--no-robot", action="store_true", help="Disable robot control (browse-only)")
-    return p.parse_args()
+    p.add_argument(
+        "--fov-crop",
+        type=float,
+        default=1.0,
+        help="Artificially narrow the LIVE camera FOV by center-cropping this fraction of each "
+        "axis BEFORE the square crop/resize (in (0, 1]; 1.0 = off, 0.85 = ~15%% tighter FOV). "
+        "Mirrors CameraNode.publish_fov_crop so you can preview the deployment FOV against the "
+        "dataset frame.",
+    )
+    args = p.parse_args()
+    if not (0.0 < args.fov_crop <= 1.0):
+        p.error(f"--fov-crop must be in (0, 1], got {args.fov_crop}")
+    return args
 
 
 def s3_cp(s3_uri: str, local_path: str) -> bool:
@@ -365,6 +377,23 @@ def show_loading(window_name: str, message: str) -> None:
     cv2.waitKey(1)
 
 
+def center_fov_crop(frame: np.ndarray, frac: float) -> np.ndarray:
+    """Center-crop to ``frac`` of each dimension to simulate a narrower FOV.
+
+    ``frac`` is the fraction of width/height kept (``(0, 1]``); smaller = tighter
+    FOV / more zoom. ``frac >= 1.0`` is a no-op. Mirrors
+    ``CameraNode._center_fov_crop`` so the preview matches the deployment path.
+    """
+    if frac >= 1.0:
+        return frame
+    h, w = frame.shape[:2]
+    ch = max(1, round(h * frac))
+    cw = max(1, round(w * frac))
+    y0 = (h - ch) // 2
+    x0 = (w - cw) // 2
+    return frame[y0 : y0 + ch, x0 : x0 + cw]
+
+
 def center_crop_square(frame: np.ndarray) -> np.ndarray:
     h, w = frame.shape[:2]
     side = min(h, w)
@@ -373,9 +402,11 @@ def center_crop_square(frame: np.ndarray) -> np.ndarray:
     return frame[y0 : y0 + side, x0 : x0 + side]
 
 
-def make_camera_panel(frame: np.ndarray, target_height: int, label: str = "Live Camera") -> np.ndarray:
-    """Center-crop to square, then resize to match episode panel height."""
-    cropped = center_crop_square(frame)
+def make_camera_panel(
+    frame: np.ndarray, target_height: int, label: str = "Live Camera", fov_crop: float = 1.0
+) -> np.ndarray:
+    """Optionally narrow FOV, then center-crop to square and resize to panel height."""
+    cropped = center_crop_square(center_fov_crop(frame, fov_crop))
     resized = cv2.resize(cropped, (target_height, target_height))
 
     bar_h = 28
@@ -476,7 +507,10 @@ def main() -> None:
             try:
                 cam_data = cam.read()
                 cam_frame = cv2.cvtColor(cam_data.images["rgb"], cv2.COLOR_RGB2BGR)
-                panels.append(make_camera_panel(cam_frame, ep_panel.shape[0] - 28, f"Live {view}"))
+                live_label = f"Live {view}" + (f" (fov {args.fov_crop:g})" if args.fov_crop < 1.0 else "")
+                panels.append(
+                    make_camera_panel(cam_frame, ep_panel.shape[0] - 28, live_label, args.fov_crop)
+                )
             except Exception as exc:
                 if view not in cam_read_warned:
                     print(f"Warning: live camera read failed for '{view}': {exc}", file=sys.stderr)

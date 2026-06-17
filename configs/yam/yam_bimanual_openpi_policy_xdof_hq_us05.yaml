@@ -11,7 +11,12 @@ version: "1"
 #   - can_left / can_right interfaces up at 1 Mbit/s.
 
 session:
-  save_root: recordings
+  # {policy_name} is resolved at startup by querying the OpenPI server's
+  # websocket metadata (runtime/config.py:_resolve_policy_name). serve_policy.py
+  # reports the served checkpoint's name — the named-checkpoint key, or
+  # <config>/<run>/<step> for a raw ckpt — so each policy's rollouts land in
+  # their own folder. Falls back to the literal template if the server is down.
+  save_root: recordings/{policy_name}
   # Policy-specific safety + ergonomics:
   #   - start_paused: RobotNode commands are gated on startup so the arm doesn't
   #     snap to wherever the policy thinks it should be. Hit [space] in the TUI
@@ -20,6 +25,7 @@ session:
   #     episode so every rollout is captured from the instant of handoff.
   start_paused: true
   record_on_unpause: true
+  episode_timeout: 240
 
 nodes:
   - type: AgentNode
@@ -113,7 +119,7 @@ nodes:
     poll_freq: 200
     ramp_duration_s: 1.5
     # startup_joint_pos: [-0.0235, 1.36242, 0.3495, 0.95763, -0.11537, -0.02913, 1.0]
-    startup_joint_pos: [0.0, 0.0, 0.2, 0.3, 0.0, 0.0, 1.0]
+    startup_joint_pos: [0.0, 0.4 , 0.35, 0.35, 0.0, 0.0, 1.0]
     startup_duration_s: 2.0
 
   - type: RobotNode
@@ -123,7 +129,7 @@ nodes:
     poll_freq: 200
     ramp_duration_s: 1.5
     # startup_joint_pos: [0.01732, 1.34234, 0.33567, 0.98454, 0.11514, 0.03717, 1.0]
-    startup_joint_pos: [0.0, 0.0, 0.2, 0.3, 0.0, 0.0, 1.0]
+    startup_joint_pos: [0.0, 0.4, 0.35, 0.35, 0.0, 0.0, 1.0]
     startup_duration_s: 2.0
 
   # Three Intel RealSense D405s — same station as the teleop config.
@@ -135,15 +141,23 @@ nodes:
   # only the bus copy is downsized. Mode MUST match the agent's
   # image_preprocess setting above so what hits the policy matches the
   # training augmentation.
+  #
+  # publish_fov_crop (fraction in (0, 1], default 1.0 = off) artificially
+  # narrows the FOV by center-cropping BEFORE the resize — a deployment knob
+  # to match the policy input to the FOV the model was trained on without
+  # changing optics. 0.85 keeps the central 85% of each axis (~15% tighter
+  # FOV / slight zoom-in); applied to the bus/policy frame only — the on-disk
+  # recording stays full FOV. Keep it identical across all 3 cams unless you
+  # deliberately want them mismatched.
   - type: CameraNode
     name: camera_top
     driver: RealSenseCamera
     device_id: "427622273494"
-
     resolution: VGA
     fps: 30
     publish_resize: [224, 224]
     publish_resize_mode: center_crop
+    publish_fov_crop: 0.88
 
   - type: CameraNode
     name: camera_left
@@ -153,6 +167,7 @@ nodes:
     fps: 30
     publish_resize: [224, 224]
     publish_resize_mode: center_crop
+    publish_fov_crop: 1.0
 
   - type: CameraNode
     name: camera_right
@@ -162,6 +177,7 @@ nodes:
     fps: 30
     publish_resize: [224, 224]
     publish_resize_mode: center_crop
+    publish_fov_crop: 1.0
 
   # Live viser monitor — URDF overlays + camera panels, no commands.
   - type: ViserMonitorNode

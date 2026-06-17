@@ -13,6 +13,13 @@ serialization + TCP cost. The on-disk MP4 keeps the full-resolution frame —
 only the bus payload is downsized. Two modes match AsyncDiffusionAgent's
 ``image_preprocess``: ``center_crop`` (crop to min(H,W) square then resize)
 and ``pad`` (resize-with-pad / letterbox).
+
+Optional ``publish_fov_crop`` (fraction in ``(0, 1]``) artificially narrows the
+field of view by center-cropping the frame *before* the resize. This is a
+deployment-only knob: it simulates a narrower-FOV camera so the policy input
+matches the FOV the model was trained on, without touching the optics. Like
+``publish_resize`` it only affects the bus payload — the on-disk recording
+keeps the full FOV — so it composes with either resize mode.
 """
 
 from __future__ import annotations
@@ -32,7 +39,27 @@ _CAMERA_DRIVER_REGISTRY: dict[str, str] = {
     "RealSenseCamera":  "robots_realtime.sensors.cameras.realsense_camera:RealSenseCamera",
 }
 
-_NODE_ONLY_KEYS = {"name", "type", "poll_freq", "publish_resize", "publish_resize_mode"}
+_NODE_ONLY_KEYS = {
+    "name", "type", "poll_freq",
+    "publish_resize", "publish_resize_mode", "publish_fov_crop",
+}
+
+
+def _center_fov_crop(img: np.ndarray, frac: float) -> np.ndarray:
+    """Center-crop to ``frac`` of each dimension to simulate a narrower FOV.
+
+    ``frac`` is the fraction of width/height kept (``(0, 1]``); smaller = tighter
+    FOV / more zoom. ``frac >= 1.0`` is a no-op. The crop is symmetric about the
+    image center so the principal point stays centered.
+    """
+    if frac >= 1.0:
+        return img
+    h, w = img.shape[:2]
+    ch = max(1, round(h * frac))
+    cw = max(1, round(w * frac))
+    h0 = (h - ch) // 2
+    w0 = (w - cw) // 2
+    return img[h0:h0 + ch, w0:w0 + cw]
 
 
 def _center_crop_and_resize(img: np.ndarray, target_h: int, target_w: int) -> np.ndarray:
@@ -112,12 +139,19 @@ class CameraNode(Node):
         _driver_spec: dict | None = None,
         publish_resize: tuple[int, int] | list[int] | None = None,
         publish_resize_mode: str = "center_crop",
+        publish_fov_crop: float = 1.0,
         **kwargs,
     ) -> None:
         super().__init__(name=name, writer=writer, **kwargs)
         self._driver = driver
         self._driver_spec = _driver_spec
         self.poll_freq = poll_freq
+
+        if not (0.0 < publish_fov_crop <= 1.0):
+            raise ValueError(
+                f"[{name}] publish_fov_crop must be in (0, 1], got {publish_fov_crop!r}"
+            )
+        self._publish_fov_crop = float(publish_fov_crop)
 
         if publish_resize is not None:
             if publish_resize_mode not in _RESIZE_MODES:
@@ -164,19 +198,27 @@ class CameraNode(Node):
         if extrinsics is not None:
             msg["extrinsics"] = extrinsics
 
-        if self._publish_resize is None:
+        fov_crop = self._publish_fov_crop
+        if self._publish_resize is None and fov_crop >= 1.0:
             self.publish("rgb", msg, ts=ts)
         else:
-            # Bus payload: resized RGB only — depth and intrinsics would need
-            # geometric rescaling to stay consistent with the new pixel grid,
-            # so they're dropped from the bus version. The disk recording
-            # (record_data=msg) keeps everything at full resolution.
-            target_h, target_w = self._publish_resize
-            resized = {
-                k: self._publish_resize_fn(img, target_h, target_w)
-                for k, img in data.images.items()
+            # Bus payload: optionally FOV-cropped then resized RGB only — depth
+            # and intrinsics would need geometric rescaling to stay consistent
+            # with the new pixel grid, so they're dropped from the bus version.
+            # The disk recording (record_data=msg) keeps everything at full
+            # resolution and full FOV.
+            def _to_bus(img: np.ndarray) -> np.ndarray:
+                if fov_crop < 1.0:
+                    img = _center_fov_crop(img, fov_crop)
+                if self._publish_resize is not None:
+                    target_h, target_w = self._publish_resize
+                    img = self._publish_resize_fn(img, target_h, target_w)
+                return img
+
+            bus_msg: dict = {
+                "images": {k: _to_bus(img) for k, img in data.images.items()},
+                "timestamp": ts,
             }
-            bus_msg: dict = {"images": resized, "timestamp": ts}
             if extrinsics is not None:
                 bus_msg["extrinsics"] = extrinsics  # pose is resolution-invariant
             self.publish("rgb", bus_msg, ts=ts, record_data=msg)
@@ -200,6 +242,7 @@ class CameraNode(Node):
             "poll_freq": params.get("poll_freq"),
             "publish_resize": params.get("publish_resize"),
             "publish_resize_mode": params.get("publish_resize_mode", "center_crop"),
+            "publish_fov_crop": params.get("publish_fov_crop", 1.0),
         }
         if "driver" in params:
             driver_kwargs = {k: v for k, v in params.items() if k not in _NODE_ONLY_KEYS}
