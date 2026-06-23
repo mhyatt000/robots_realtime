@@ -22,6 +22,43 @@ nodes:
     viz_freq: 20.0
     state_topics:
       left: xarm7/joint_state
+    image_topics:
+      realsense: camera_realsense/rgb
+      logitech_f95da4be: camera_logitech_f95da4be/rgb
+      logitech_1e9c6aae: camera_logitech_1e9c6aae/rgb
+      logitech_ad3f052e: camera_logitech_ad3f052e/rgb
+
+  - type: CameraNode
+    name: camera_realsense
+    driver: RealSenseCamera
+    device_id: "935422073465"
+    resolution: VGA
+    fps: 30
+
+  - type: CameraNode
+    name: camera_logitech_f95da4be
+    driver: OpenCVCamera
+    device_path: 6
+    camera_type: logitech_c930e
+    resolution: [640, 480]
+    fps: 30
+
+  - type: CameraNode
+    name: camera_logitech_1e9c6aae
+    driver: OpenCVCamera
+    device_path: 8
+    camera_type: logitech_c930e
+    resolution: [640, 480]
+    fps: 30
+
+  - type: CameraNode
+    name: camera_logitech_ad3f052e
+    driver: OpenCVCamera
+    device_path: 10
+    camera_type: logitech_c930e
+    resolution: [640, 480]
+    fps: 30
+
 
   - type: RobotNode
     name: xarm7

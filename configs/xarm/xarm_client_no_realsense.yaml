@@ -24,16 +24,8 @@ nodes:
     state_topics:
       left: xarm7/joint_state
     image_topics:
-      realsense: camera_realsense/rgb
       logitech_1e9c6aae: camera_logitech_1e9c6aae/rgb
       logitech_ad3f052e: camera_logitech_ad3f052e/rgb
-
-  - type: CameraNode
-    name: camera_realsense
-    driver: RealSenseCamera
-    device_id: "935422073465"
-    resolution: VGA
-    fps: 30
 
   - type: CameraNode
     name: camera_logitech_1e9c6aae
