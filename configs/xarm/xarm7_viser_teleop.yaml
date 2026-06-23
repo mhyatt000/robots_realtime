@@ -1,0 +1,33 @@
+version: "1"
+
+session:
+  save_root: recordings
+
+nodes:
+  - type: ViserTeleopNode
+    name: xarm7_viser
+    agent_class: robots_realtime.agents.teleoperation.xarm7_pyroki_viser_agent:XArm7PyrokiViserAgent
+    agent_kwargs:
+      viser_port: 8765
+      ik_rate: 50.0
+      urdf_path: xarm7_standalone.urdf
+      enable_gripper: true
+      # Per-joint maximum change per 50 Hz command tick: [J1, J2, ..., J7].
+      max_joint_step_deg: [1.0, 0.5, 1.5, 0.5, 1.0, 1.0, 1.0]
+      minimum_z_m: 0.000
+      self_collision_margin_m: 0.002
+      collision_guard: true
+    arm_key: left
+    ik_freq: 50.0
+    viz_freq: 20.0
+    state_topics:
+      left: xarm7/joint_state
+
+  - type: RobotNode
+    name: xarm7
+    robot_config: robot_configs/xarm/xarm7_gripper.yaml
+    cmd_topic: xarm7_viser/joint_pos
+    poll_freq: 50.0
+    ramp_duration_s: 1.5
+    startup_joint_pos: null
+    shutdown_joint_pos: null

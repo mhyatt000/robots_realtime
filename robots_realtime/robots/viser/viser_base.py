@@ -56,6 +56,8 @@ class ViserAbstractBase(ABC):
         rate: float = 100.0,
         viser_server: Optional[viser.ViserServer] = None,
         robot_description: str = "yam_description",
+        urdf_path: Optional[str] = None,
+        min_distance_from_limits: float = 0.25,
         bimanual: bool = False,
         coordinate_frame: Literal["base", "world"] = "base",
     ):
@@ -63,7 +65,9 @@ class ViserAbstractBase(ABC):
         self.bimanual = bimanual
         self.coordinate_frame = coordinate_frame
 
-        if robot_description == "yam_description":  # temporary fix for yam_description
+        if urdf_path is not None:
+            self.urdf = yourdfpy.URDF.load(urdf_path)
+        elif robot_description == "yam_description":  # temporary fix for yam_description
             # current path
             current_path = os.path.dirname(os.path.abspath(__file__))
             urdf_path = os.path.join(
@@ -78,7 +82,8 @@ class ViserAbstractBase(ABC):
             )
         else:
             self.urdf = set_min_distance_from_limits(
-                load_urdf_robot_description(robot_description), min_distance_from_limits=0.25
+                load_urdf_robot_description(robot_description),
+                min_distance_from_limits=min_distance_from_limits
             )
 
         self.viser_server = viser_server if viser_server is not None else viser.ViserServer()

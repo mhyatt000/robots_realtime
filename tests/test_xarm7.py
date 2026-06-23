@@ -4,7 +4,7 @@ import unittest
 
 import numpy as np
 
-from robots_realtime.robots.xarm7 import XArm7
+from robots_realtime.robots.xarm7 import XArm7, normalized_gripper_to_urdf
 
 
 class FakeXArm:
@@ -74,6 +74,11 @@ class FakeXArm:
 
 
 class XArm7Test(unittest.TestCase):
+    def test_normalized_gripper_to_urdf_reverses_convention(self) -> None:
+        self.assertEqual(normalized_gripper_to_urdf(1.0), 0.0)
+        self.assertEqual(normalized_gripper_to_urdf(0.0), 0.85)
+        self.assertAlmostEqual(normalized_gripper_to_urdf(0.5), 0.425)
+
     def make_robot(self, arm: FakeXArm, **kwargs) -> XArm7:
         return XArm7(arm=arm, sleep_fn=lambda _: None, **kwargs)
 

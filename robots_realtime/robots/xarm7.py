@@ -18,6 +18,16 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+def normalized_gripper_to_urdf(
+    normalized: float, travel_rad: float = 0.85
+) -> float:
+    """Convert hardware convention (0=closed, 1=open) to URDF drive angle."""
+    value = float(normalized)
+    if not 0.0 <= value <= 1.0:
+        raise ValueError("normalized gripper position must be in [0, 1]")
+    return (1.0 - value) * float(travel_rad)
+
+
 class XArm7:
     """Joint-position controller for a UFACTORY xArm7."""
 
