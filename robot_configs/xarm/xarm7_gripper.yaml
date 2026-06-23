@@ -1,0 +1,9 @@
+_target_: robots_realtime.robots.xarm7.XArm7
+host_name: "192.168.1.231"
+enable_gripper: true
+
+# UFACTORY xArm gripper pulse positions. The robots_realtime command remains
+# normalized: 0.0 = closed, 1.0 = open.
+gripper_closed_position: 0
+gripper_open_position: 850
+gripper_speed: 5000

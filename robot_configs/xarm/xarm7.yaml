@@ -1,0 +1,3 @@
+_target_: robots_realtime.robots.xarm7.XArm7
+host_name: "192.168.1.231"
+enable_gripper: false

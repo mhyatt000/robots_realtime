@@ -40,6 +40,28 @@ class MyRobot:
     def get_observations(self) -> dict: ...  # must contain "joint_pos"
 ```
 
+The xArm7 implementation is available as
+`robots_realtime.robots.xarm7:XArm7`. Install the optional SDK dependency and
+reference one of the supplied robot configs:
+
+```bash
+uv sync --extra xarm7
+```
+
+```yaml
+- type: RobotNode
+  name: xarm
+  robot_config: robot_configs/xarm/xarm7_gripper.yaml
+  cmd_topic: agent/joint_pos
+  poll_freq: 100
+  shutdown_joint_pos: null  # set a measured safe 8-value park pose before enabling
+```
+
+Joint positions are radians. With the UFACTORY gripper enabled, commands contain
+8 values: 7 arm joints followed by a normalized gripper value (`0=closed`,
+`1=open`). Update the controller IP and gripper pulse limits in the robot config
+for the local hardware.
+
 ## Adding a new camera
 
 Implement `read() -> CameraData` from `robots_realtime.sensors.cameras.camera`.
