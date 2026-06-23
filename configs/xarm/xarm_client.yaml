@@ -1,0 +1,34 @@
+version: "1"
+
+session:
+  save_root: recordings
+
+nodes:
+  - type: ViserTeleopNode
+    name: xarm7_client
+    agent_class: robots_realtime.agents.client.xarm7_client:XArm7ClientAgent
+    agent_kwargs:
+      viser_port: 8765
+      ik_rate: 50.0
+      urdf_path: xarm7_standalone.urdf
+      enable_gripper: true
+      client_host: "0.0.0.0"
+      client_port: 9000
+      max_joint_step_deg: [0.75, 0.5, 0.75, 0.5, 0.5, 1.0, 1.0]
+      minimum_z_m: 0.000
+      self_collision_margin_m: 0.0002
+      collision_guard: true
+    arm_key: left
+    ik_freq: 50.0
+    viz_freq: 20.0
+    state_topics:
+      left: xarm7/joint_state
+
+  - type: RobotNode
+    name: xarm7
+    robot_config: robot_configs/xarm/xarm7_gripper.yaml
+    cmd_topic: xarm7_client/joint_pos
+    poll_freq: 50.0
+    ramp_duration_s: 1.5
+    startup_joint_pos: null
+    shutdown_joint_pos: null
